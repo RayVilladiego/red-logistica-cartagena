@@ -4,63 +4,51 @@ import pandas as pd
 import joblib
 from tensorflow.keras.models import load_model
 
-# ------------------------ Configuración de la página ------------------------
+# Cargar modelo y scaler
+model = load_model("modelo_entrega.h5", compile=False)
+scaler = joblib.load("scaler_entrega.pkl")
+
+# -------- INTERFAZ --------
 st.set_page_config(
-    page_title="Estimador Logístico Cartagena",
-    page_icon="🚚",
-    layout="centered",
+    page_title="Red Logística Cartagena",
+    layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ------------------------ Barra lateral con info ------------------------
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3063/3063822.png", width=100)
-    st.title("📦 Red Logística")
-    st.markdown("""
-    Esta aplicación predice el **tiempo estimado de entrega** de productos en Cartagena,
-    considerando distancia, tipo de vía y clima.  
-    Desarrollado por **Will Andrés Herazo** para una red logística inteligente en la ciudad.
-    """)
-    st.markdown("📍 Proyecto académico con redes neuronales y aprendizaje automático.")
+    st.markdown("🚚 **Red Logística**", unsafe_allow_html=True)
+    st.markdown(
+        """
+        Esta aplicación predice el **tiempo estimado de entrega** de productos en Cartagena, 
+        considerando distancia, tipo de vía y clima.
 
-# ------------------------ Cargar modelos ------------------------
-model = load_model("modelo_entrega.h5")
-scaler = joblib.load("scaler_entrega.pkl")
+        **Desarrollado por Raylin Villadiego** para una red logística inteligente en la ciudad.
 
-# ------------------------ Encabezado principal ------------------------
-st.markdown("<h1 style='text-align: center;'>🚛 Estimador de Entregas Cartagena</h1>", unsafe_allow_html=True)
-st.markdown("#### 🗺️ Completa los datos logísticos:")
+        🎯 Proyecto académico con redes neuronales y aprendizaje automático.
+        """
+    )
 
-# ------------------------ Inputs del usuario ------------------------
-origen = st.selectbox("📍 Punto de origen:", ["Retail1", "Retail2", "Tienda3", "Almacén4"])
-destino = st.selectbox("🏁 Punto de destino:", ["Puerto5", "Puerto6", "Tienda7", "Bodega8"])
-distancia = st.slider("📏 Distancia (km):", min_value=2.0, max_value=30.0, step=0.5)
+st.title("📦 Estimador Logístico Cartagena")
 
-tipo_via = st.selectbox("🛣️ Tipo de vía:", ["Principal", "Secundaria", "Terciaria"])
-clima = st.selectbox("🌤️ Condiciones climáticas:", ["Soleado", "Lluvioso", "Nublado"])
+# Entrada de datos
+origen = st.selectbox("Seleccione el punto de origen:", ["Retail1", "Retail2", "Tienda3", "Almacén4", "Puerto5"])
+distancia = st.slider("Distancia (km)", 2, 30, 10)
+tipo_via = st.selectbox("Tipo de vía", ["Principal", "Secundaria"])
+clima = st.selectbox("Clima", ["Soleado", "Lluvioso", "Nublado"])
 
-# ------------------------ Codificar variables ------------------------
-tipo_via_map = {"Principal": 0, "Secundaria": 1, "Terciaria": 2}
-clima_map = {"Soleado": 0, "Lluvioso": 1, "Nublado": 2}
+# Codificación manual
+map_via = {"Principal": 0, "Secundaria": 1}
+map_clima = {"Soleado": 0, "Lluvioso": 1, "Nublado": 2}
+map_origen = {"Retail1": 0, "Retail2": 1, "Tienda3": 2, "Almacén4": 3, "Puerto5": 4}
 
-# Features de entrada
-input_data = pd.DataFrame({
-    "Distancia": [distancia],
-    "Tipo_via": [tipo_via_map[tipo_via]],
-    "Clima": [clima_map[clima]]
-})
-
+# Crear array de entrada
+input_data = np.array([[map_origen[origen], distancia, map_via[tipo_via], map_clima[clima]]])
 input_scaled = scaler.transform(input_data)
 
-# ------------------------ Predicción ------------------------
-prediccion = model.predict(input_scaled)
-tiempo_estimado = round(prediccion[0][0], 2)
+# Predicción
+tiempo_estimado = model.predict(input_scaled)[0][0]
+tiempo_estimado = round(tiempo_estimado, 2)
 
-# ------------------------ Resultado ------------------------
-st.markdown("### ⏱️ Resultado de la predicción:")
-st.success(f"🕐 Tiempo estimado de entrega: **{tiempo_estimado} minutos**")
-
-# ------------------------ Pie de página ------------------------
-st.markdown("---")
-st.markdown("<center>💡 Proyecto académico - 2025</center>", unsafe_allow_html=True)
+# Mostrar resultado
+st.success(f"🕒 Tiempo estimado de entrega: {tiempo_estimado} minutos")
 

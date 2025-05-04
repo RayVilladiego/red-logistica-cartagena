@@ -1,102 +1,95 @@
+
 import streamlit as st
 import pandas as pd
-import numpy as np
-import folium
-from folium.plugins import MarkerCluster
-from streamlit_folium import st_folium
 import joblib
+import folium
+from folium.plugins import MarkerDrag
+from streamlit_folium import st_folium
 from tensorflow.keras.models import load_model
-from datetime import datetime
+import datetime
 
-# Configuración general
-st.set_page_config(page_title="Red Logística Cartagena", layout="wide")
+# Configuración de la página
+st.set_page_config(page_title="Red Logística Inteligente", layout="wide")
+st.title("🚚 Red Logística Inteligente")
 
-# Sidebar de navegación
-with st.sidebar:
-    st.title("📦 Red Logística Cartagena")
-    st.write("Filtros y controles del sistema")
-    estado_pedido = st.selectbox("📦 Estado del pedido", ["En camino", "Entregado", "Pendiente"])
-    alerta_congestion = st.checkbox("⚠️ Mostrar zonas con congestión")
-    hora_actual = st.slider("🕒 Hora de salida (24h)", 0, 23, 9)
-
-# Modelo y scaler
-from tensorflow.keras.models import load_model
-# Cargar el modelo sin recompilar (solo para predicción)
+# Cargar modelo, scaler y columnas
 model = load_model("modelo_entrega.h5", compile=False)
 scaler = joblib.load("scaler_entrega.pkl")
 columnas_modelo = joblib.load("columnas_modelo.pkl")
 
-# Simulación de ubicaciones
-ubicaciones = {
-    "Retail1": [10.39972, -75.51444],
-    "Retail2": [10.4220, -75.5412],
-    "Tienda3": [10.4238, -75.5253],
-    "Almacén4": [10.3938, -75.4791],
-    "Puerto5": [10.4242, -75.5505],
+# Sidebar para filtros
+with st.sidebar:
+    st.header("📦 Filtros de pedidos")
+    estado = st.selectbox("Estado del pedido", ["En ruta", "Entregado", "Pendiente"])
+    alerta = st.selectbox("Zona en alerta", ["Ninguna", "Zona Norte", "Zona Industrial", "Centro Histórico"])
+
+# Mapa editable
+st.subheader("🗺️ Selecciona los puntos de origen y destino")
+
+m = folium.Map(location=[10.4, -75.5], zoom_start=12)
+origen = folium.Marker(location=[10.4, -75.5], draggable=True, popup="Origen", icon=folium.Icon(color="green"))
+destino = folium.Marker(location=[10.43, -75.52], draggable=True, popup="Destino", icon=folium.Icon(color="red"))
+origen.add_to(m)
+destino.add_to(m)
+
+map_data = st_folium(m, width=700, height=450)
+st.write("🔄 Arrastra los puntos en el mapa para ajustar tu ruta.")
+
+# Simulación de entrada de datos
+st.subheader("🧠 Parámetros de la entrega")
+distancia_km = st.slider("Distancia estimada (km)", 1.0, 30.0, 10.0)
+tipo_via = st.selectbox("Tipo de vía", ["Primaria", "Secundaria"])
+clima = st.selectbox("Condición climática", ["Soleado", "Lluvioso", "Nublado"])
+hora_actual = datetime.datetime.now().hour
+
+# Procesamiento de entrada
+entrada = {
+    "Distancia": distancia_km,
+    "Hora": hora_actual,
+    "Tipo_via_Primaria": 1 if tipo_via == "Primaria" else 0,
+    "Tipo_via_Secundaria": 1 if tipo_via == "Secundaria" else 0,
+    "Clima_Lluvioso": 1 if clima == "Lluvioso" else 0,
+    "Clima_Nublado": 1 if clima == "Nublado" else 0,
+    "Clima_Soleado": 1 if clima == "Soleado" else 0,
 }
 
-# Función para sugerir mejor franja horaria (simulada)
-def sugerir_horario(distancia_km, clima, tipo_via):
-    if clima == "Lluvioso" or tipo_via == "Terciaria":
-        return "Evitar entre 6:00 a.m. y 8:00 a.m."
-    elif distancia_km > 20:
-        return "Recomendado entre 10:00 a.m. y 2:00 p.m."
+# Asegurar que todas las columnas estén presentes
+for col in columnas_modelo:
+    if col not in entrada:
+        entrada[col] = 0
+
+df_input = pd.DataFrame([entrada])
+df_scaled = scaler.transform(df_input)
+
+# Predicción
+prediccion = model.predict(df_scaled)[0][0]
+st.success(f"⏱️ Tiempo estimado de entrega: {prediccion:.2f} minutos")
+
+# Recomendación de horario
+def sugerir_horario(distancia):
+    if distancia <= 5:
+        return "8:00 - 10:00"
+    elif distancia <= 15:
+        return "6:00 - 8:00"
     else:
-        return "Sin restricciones críticas"
+        return "5:00 - 7:00"
 
-# Interfaz central
-st.header("🧠 Estimador de Entrega Inteligente")
-col1, col2 = st.columns(2)
+st.info(f"🕒 Mejor horario para salir: {sugerir_horario(distancia_km)}")
 
-with col1:
-    origen = st.selectbox("🛫 Punto de origen", list(ubicaciones.keys()))
-    destino = st.selectbox("📍 Punto de destino", list(ubicaciones.keys()), index=4)
-    distancia_km = np.round(
-        np.random.uniform(2, 25) if origen != destino else 0.5, 2
-    )
-    tipo_via = st.selectbox("🛣️ Tipo de vía", ["Primaria", "Secundaria", "Terciaria"])
-    clima = st.selectbox("🌤️ Clima", ["Soleado", "Lluvioso", "Nublado"])
+# KPIs logísticos
+st.subheader("📊 Indicadores clave")
+col1, col2, col3 = st.columns(3)
+col1.metric("Estado actual", estado)
+col2.metric("Zona crítica", alerta)
+col3.metric("📦 Pedido entregado (%)", f"{round((1 if estado=='Entregado' else 0.5)*100)}%")
 
-    # Codificación
-    entrada = {
-        "Distancia": distancia_km,
-        "Tipo_via_Primaria": 1 if tipo_via == "Primaria" else 0,
-        "Tipo_via_Secundaria": 1 if tipo_via == "Secundaria" else 0,
-        "Clima_Lluvioso": 1 if clima == "Lluvioso" else 0,
-        "Clima_Nublado": 1 if clima == "Nublado" else 0,
-        "Hora": hora_actual
-    }
+# Exportación a Excel
+df_resultado = pd.DataFrame({
+    "Distancia (km)": [distancia_km],
+    "Clima": [clima],
+    "Tipo de vía": [tipo_via],
+    "Hora": [hora_actual],
+    "Tiempo estimado (min)": [prediccion]
+})
 
-    # Asegurar todas las columnas
-    for col in columnas_modelo:
-        if col not in entrada:
-            entrada[col] = 0
-
-    df_input = pd.DataFrame([entrada])
-    df_scaled = scaler.transform(df_input)
-    prediccion = model.predict(df_scaled)[0][0]
-    st.success(f"⏱️ Tiempo estimado de entrega: {prediccion:.2f} minutos")
-    st.info(f"🕒 Mejor horario para salir: {sugerir_horario(distancia_km, clima, tipo_via)}")
-
-with col2:
-    st.subheader("🗺️ Mapa interactivo de ruta")
-    mapa = folium.Map(location=[10.41, -75.53], zoom_start=13)
-    marcador = MarkerCluster().add_to(mapa)
-    folium.Marker(location=ubicaciones[origen], tooltip="Origen", icon=folium.Icon(color="green")).add_to(marcador)
-    folium.Marker(location=ubicaciones[destino], tooltip="Destino", icon=folium.Icon(color="red")).add_to(marcador)
-    folium.PolyLine(locations=[ubicaciones[origen], ubicaciones[destino]],
-                    color="blue", weight=3).add_to(mapa)
-
-    if alerta_congestion:
-        folium.Circle(
-            location=ubicaciones["Retail2"],
-            radius=300,
-            color="orange",
-            fill=True,
-            tooltip="🚧 Congestión alta"
-        ).add_to(mapa)
-
-    st_data = st_folium(mapa, width=700, height=450)
-
-# Pie de página
-st.caption("🔍 Proyecto académico impulsado con redes neuronales - 2025")
+st.download_button("📥 Exportar resultados a Excel", data=df_resultado.to_csv(index=False).encode('utf-8'), file_name="resultado_entrega.csv", mime="text/csv")

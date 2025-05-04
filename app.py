@@ -5,7 +5,7 @@ import joblib
 from tensorflow.keras.models import load_model
 
 # Cargar modelos
-model = load_model("modelo_entrega.h5")
+model = load_model("modelo_entrega.h5", compile=False)
 scaler = joblib.load("scaler_entrega.pkl")
 columnas_modelo = joblib.load("columnas_modelo.pkl")
 

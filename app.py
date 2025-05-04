@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 import folium
-from folium.plugins import MarkerDrag
+folium.Marker(location=[lat, lon], draggable=True, popup="Mover este punto").add_to(m)
 from streamlit_folium import st_folium
 from tensorflow.keras.models import load_model
 import datetime

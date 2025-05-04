@@ -1,61 +1,31 @@
 import streamlit as st
-import numpy as np
+import folium
+from streamlit_folium import st_folium
 import pandas as pd
-import joblib
-from tensorflow.keras.models import load_model
-from tensorflow.keras.losses import MeanSquaredError
-import matplotlib.pyplot as plt
+import numpy as np
 
-# Configuración de página
+# Título
 st.set_page_config(page_title="Red Logística Cartagena", layout="wide")
+st.title("📍 Red Logística - Seguimiento en tiempo real estilo Waze")
 
-# Sidebar informativa
-with st.sidebar:
-    st.markdown("## 🚚 Red Logística")
-    st.markdown(
-        """
-        Esta aplicación predice el **tiempo estimado de entrega** de productos en Cartagena,
-        considerando distancia, tipo de vía y clima.
+# KPIs simulados
+col1, col2, col3 = st.columns(3)
+col1.metric("Pedidos activos", "25", "+3 hoy")
+col2.metric("Retrasos detectados", "4", "-1 vs ayer")
+col3.metric("Entrega puntual (%)", "87%", "+5%")
 
-        **Desarrollado por Will Andrés Herazo**
+# Coordenadas de ejemplo (Cartagena)
+origen = [10.391049, -75.479426]  # Bocagrande
+destino = [10.424903, -75.544122]  # Mamonal
 
-        🔬 Proyecto académico con redes neuronales y aprendizaje automático.
-        """
-    )
-    st.image("mapa_logistico.png", use_column_width=True)
+# Crear mapa
+m = folium.Map(location=origen, zoom_start=12)
+folium.Marker(origen, tooltip="Origen: Bocagrande", icon=folium.Icon(color="blue")).add_to(m)
+folium.Marker(destino, tooltip="Destino: Mamonal", icon=folium.Icon(color="green")).add_to(m)
 
-# Encabezado
-st.title("🧠 Estimador Logístico Cartagena")
-st.write("Complete los datos para estimar el tiempo de entrega:")
+# Simular ruta
+folium.PolyLine([origen, destino], color="red", weight=3, opacity=0.8).add_to(m)
 
-# Inputs
-origen = st.selectbox("Origen", ["Retail1", "Retail2", "Tienda3", "Almacén4", "Puerto5"])
-distancia = st.slider("Distancia (km)", 2.0, 30.0, 10.0)
-tipo_via = st.selectbox("Tipo de vía", ["Principal", "Secundaria"])
-clima = st.selectbox("Clima", ["Soleado", "Lluvia", "Tormenta"])
-
-# Preprocesamiento
-input_data = pd.DataFrame({
-    "Distancia": [distancia],
-    "Tipo_via": [1 if tipo_via == "Principal" else 0],
-    "Clima": [0 if clima == "Soleado" else 1 if clima == "Lluvia" else 2],
-    "Puerto": [1 if origen == "Puerto5" else 0]
-})
-
-# Cargar modelos
-@st.cache_resource
-def cargar_modelos():
-    model = load_model("modelo_entrega.h5", custom_objects={"mse": MeanSquaredError()})
-    scaler = joblib.load("scaler_entrega.pkl")
-    return model, scaler
-
-model, scaler = cargar_modelos()
-
-# Transformar y predecir
-try:
-    input_scaled = scaler.transform(input_data)
-    prediction = model.predict(input_scaled)
-    tiempo = round(prediction[0][0], 2)
-    st.success(f"🕒 Tiempo estimado de entrega: {tiempo} minutos")
-except Exception as e:
-    st.error(f"Error al realizar la predicción: {e}")
+# Mostrar mapa
+st.subheader("📌 Mapa de ruta logística")
+st_data = st_folium(m, width=1200, height=600)

@@ -55,6 +55,5 @@ streamlit run app.py
 
 ---
 
-📍 Proyecto académico desarrollado por **Will Andrés Herazo** y colaboradores.  
-👨‍💻 Contacto: willandresh@ejemplo.com
-
+📍 Proyecto académico desarrollado por **Raylin Villadiego Rivero** y colaboradores.  
+👨‍💻 Contacto: villadiegor@utb.edu.co

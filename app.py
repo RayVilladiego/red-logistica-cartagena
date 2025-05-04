@@ -20,7 +20,9 @@ with st.sidebar:
     hora_actual = st.slider("🕒 Hora de salida (24h)", 0, 23, 9)
 
 # Modelo y scaler
-model = load_model("modelo_entrega.h5")
+from tensorflow.keras.models import load_model
+# Cargar el modelo sin recompilar (solo para predicción)
+model = load_model("modelo_entrega.h5", compile=False)
 scaler = joblib.load("scaler_entrega.pkl")
 columnas_modelo = joblib.load("columnas_modelo.pkl")
 

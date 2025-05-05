@@ -2,34 +2,31 @@
 
 import streamlit as st
 import pandas as pd
-import datetime
+import numpy as np
 
-def mostrar_dashboard():
-    st.title("📊 Panel de KPIs Logísticos")
-    st.subheader("Resumen general del sistema")
+def show_dashboard():
+    st.title("📊 Dashboard Logístico")
 
-    # Simulación de KPIs (puedes conectar con base de datos real)
-    pedidos_totales = 128
-    pedidos_en_ruta = 37
-    pedidos_entregados = 85
-    porcentaje_entregado = (pedidos_entregados / pedidos_totales) * 100
+    # Simulación de datos
+    pedidos_entregados = 124
+    pedidos_pendientes = 36
+    promedio_tiempo = 42  # minutos
+    porcentaje_retrasos = 18  # %
 
-    # KPIs
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Pedidos en Ruta", pedidos_en_ruta)
-    col2.metric("Pedidos Entregados", pedidos_entregados)
-    col3.metric("Progreso", f"{porcentaje_entregado:.1f}%", delta="↑ 5.2%")
+    st.metric("📦 Pedidos Entregados", pedidos_entregados)
+    st.metric("⏳ Pedidos Pendientes", pedidos_pendientes)
+    st.metric("🚚 Tiempo Promedio Entrega", f"{promedio_tiempo} min")
+    st.metric("⚠️ % Retrasos", f"{porcentaje_retrasos}%")
 
-    st.divider()
-    st.subheader("📍 Alertas por Congestión")
+    st.markdown("---")
+    st.subheader("Histórico de entregas por día")
+    fechas = pd.date_range(end=pd.Timestamp.today(), periods=7)
+    entregas = np.random.randint(10, 30, size=7)
+    df = pd.DataFrame({"Fecha": fechas, "Entregas": entregas})
+    st.line_chart(df.set_index("Fecha"))
 
-    zonas_congestionadas = ["Zona Norte", "Av Pedro Romero", "Centro Histórico"]
-    st.warning("Alerta de tráfico detectada en: " + ", ".join(zonas_congestionadas))
-
-    st.divider()
-    st.subheader("🕒 Mejor horario sugerido para despachar")
-
-    ahora = datetime.datetime.now()
-    sugerencia = ahora.replace(hour=16, minute=0, second=0)
-    st.info(f"Recomendación: Salir a las {sugerencia.strftime('%H:%M')} para evitar congestión.")
-
+    st.markdown("---")
+    st.subheader("Distribución de pedidos por zona")
+    zonas = ["Norte", "Sur", "Centro", "Oriente", "Occidente"]
+    valores = np.random.randint(10, 50, size=5)
+    st.bar_chart(pd.DataFrame({"Zonas": zonas, "Pedidos": valores}).set_index("Zonas"))

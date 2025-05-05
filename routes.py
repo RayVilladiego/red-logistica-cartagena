@@ -4,8 +4,8 @@ import joblib
 from tensorflow.keras.models import load_model
 from database import get_route_data
 
-# Cargar modelo y escalador
-model = load_model("modelo_entrega.h5")
+# ✅ Cargar modelo sin compilar (solo para inferencia)
+model = load_model("modelo_entrega.h5", compile=False)
 scaler = joblib.load("scaler_entrega.pkl")
 
 # Velocidad promedio por hora del día en Cartagena (km/h)

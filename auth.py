@@ -5,12 +5,14 @@ import streamlit as st
 def show_login():
     st.title("🔐 Iniciar Sesión")
 
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
+    with st.form("login_form"):
+        usuario = st.text_input("Usuario")
+        contraseña = st.text_input("Contraseña", type="password")
+        submit = st.form_submit_button("Iniciar Sesión")
 
-    if st.button("Ingresar"):
-        if username == "admin" and password == "1234":
-            st.session_state["autenticado"] = True
-            st.success("¡Ingreso exitoso!")
-        else:
-            st.error("Usuario o contraseña incorrectos")
+        if submit:
+            if usuario == "admin" and contraseña == "1234":
+                st.session_state["autenticado"] = True
+                st.success("Inicio de sesión exitoso ✅")
+            else:
+                st.error("Credenciales incorrectas. Intenta nuevamente ❌")

@@ -1,22 +1,21 @@
 import streamlit as st
-import datetime
 import numpy as np
 from tensorflow.keras.models import load_model
 import joblib
 from database import get_route_data
 
 # Cargar modelo y escalador desde el mismo directorio del proyecto
-model = load_model("modelo_entrega.h5")
+# Formato .keras es más robusto para Keras 3+
+model = load_model("modelo_entrega.keras", compile=False)
 scaler = joblib.load("scaler_entrega.pkl")
 
 def predict_time(input_data):
-    df_input = input_data.copy()
-    df_scaled = scaler.transform(df_input)
+    df_scaled = scaler.transform(input_data)
     prediction = model.predict(df_scaled)[0][0]
     return prediction
 
 def show_route():
-    st.subheader("🛣️ Predicción de Ruta Inteligente")
+    st.subheader("🛣 Predicción de Ruta Inteligente")
     route_data = get_route_data()
     st.write("Rutas actuales:")
     st.dataframe(route_data)
@@ -42,6 +41,6 @@ def show_route():
     st.success(f"⏱ Tiempo estimado de entrega: {round(pred, 2)} minutos")
 
     if hora < 7 or hora > 19:
-        st.warning("⚠️ Franja no recomendada. Riesgo de congestión o poca visibilidad.")
+        st.warning("⚠ Franja no recomendada. Riesgo de congestión o poca visibilidad.")
     else:
-        st.info("✅ Franja óptima para entregar.")
+        st.info("✅ Franja óptima para entregar.")

@@ -5,13 +5,15 @@ from tensorflow.keras.models import load_model
 import joblib
 from database import get_route_data
 
-model = load_model("models/modelo_entregas.h5")
-scaler = joblib.load("models/escalador.pkl")
+# Cargar modelo y escalador desde el mismo directorio del proyecto
+model = load_model("modelo_entrega.h5")
+scaler = joblib.load("scaler_entrega.pkl")
 
 def predict_time(input_data):
-    df_scaled = scaler.transform(input_data)
-    pred = model.predict(df_scaled)[0][0]
-    return pred
+    df_input = input_data.copy()
+    df_scaled = scaler.transform(df_input)
+    prediction = model.predict(df_scaled)[0][0]
+    return prediction
 
 def show_route():
     st.subheader("🛣️ Predicción de Ruta Inteligente")

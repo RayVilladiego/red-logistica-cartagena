@@ -8,12 +8,13 @@ from orders import show_orders
 from routes import show_route
 from home import show_home
 
+# Diccionario de páginas con emojis para visualización
 PAGINAS = {
-    "Inicio": show_home,
-    "Dashboard": show_dashboard,
-    "Seguimiento": show_tracking,
-    "Pedidos": show_orders,
-    "Ruta Inteligente": show_route
+    "🏠 Inicio": show_home,
+    "📊 Dashboard": show_dashboard,
+    "📍 Seguimiento": show_tracking,
+    "🧾 Pedidos": show_orders,
+    "🧠 Ruta Inteligente": show_route
 }
 
 def main():
@@ -25,8 +26,7 @@ def main():
     else:
         st.sidebar.title("📋 Menú de Navegación")
         seleccion = st.sidebar.radio("Ir a:", list(PAGINAS.keys()))
-        PAGINAS[seleccion]()
+        PAGINAS[seleccion]()  # Ejecuta la función correspondiente
 
 if __name__ == "__main__":
     main()
-

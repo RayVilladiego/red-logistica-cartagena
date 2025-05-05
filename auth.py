@@ -1,33 +1,16 @@
 # auth.py
 
-import json
-import os
+import streamlit as st
 
-USERS_FILE = "data/users.json"
+def show_login():
+    st.title("🔐 Iniciar Sesión")
 
-def cargar_usuarios():
-    if os.path.exists(USERS_FILE):
-        with open(USERS_FILE, "r") as f:
-            return json.load(f)
-    return {}
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
 
-def guardar_usuarios(usuarios):
-    with open(USERS_FILE, "w") as f:
-        json.dump(usuarios, f, indent=4)
-
-def autenticar_usuario(username, password):
-    usuarios = cargar_usuarios()
-    if username in usuarios and usuarios[username]["password"] == password:
-        return True
-    return False
-
-def registrar_usuario(username, password, nombre_completo):
-    usuarios = cargar_usuarios()
-    if username not in usuarios:
-        usuarios[username] = {
-            "password": password,
-            "nombre": nombre_completo
-        }
-        guardar_usuarios(usuarios)
-        return True
-    return False
+    if st.button("Ingresar"):
+        if username == "admin" and password == "1234":
+            st.session_state["autenticado"] = True
+            st.success("¡Ingreso exitoso!")
+        else:
+            st.error("Usuario o contraseña incorrectos")

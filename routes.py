@@ -5,8 +5,9 @@ from tensorflow.keras.models import load_model
 import joblib
 from database import get_route_data
 
-model = load_model("models/modelo_entregas.h5")
-scaler = joblib.load("models/escalador.pkl")
+# Carga los modelos desde la raíz del proyecto
+model = load_model("modelo_entregas.h5")
+scaler = joblib.load("scaler_entrega.pkl")
 
 def predict_time(input_data):
     df_input = input_data.copy()
@@ -18,7 +19,7 @@ def show_route():
     st.subheader("🛣️ Predicción de Ruta")
 
     route_data = get_route_data()
-    st.write("Rutas actuales:")
+    st.write("📋 Rutas actuales:")
     st.dataframe(route_data)
 
     distancia = st.slider("📏 Distancia estimada (km)", 1.0, 100.0, 10.0)

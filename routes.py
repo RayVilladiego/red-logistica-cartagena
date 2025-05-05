@@ -5,28 +5,25 @@ from tensorflow.keras.models import load_model
 import joblib
 from database import get_route_data
 
-# Carga los modelos desde la raíz del proyecto
-model = load_model("modelo_entregas.h5")
-scaler = joblib.load("scaler_entrega.pkl")
+model = load_model("models/modelo_entregas.h5")
+scaler = joblib.load("models/escalador.pkl")
 
 def predict_time(input_data):
-    df_input = input_data.copy()
-    df_scaled = scaler.transform(df_input)
-    prediction = model.predict(df_scaled)[0][0]
-    return prediction
+    df_scaled = scaler.transform(input_data)
+    pred = model.predict(df_scaled)[0][0]
+    return pred
 
 def show_route():
-    st.subheader("🛣️ Predicción de Ruta")
-
+    st.subheader("🛣️ Predicción de Ruta Inteligente")
     route_data = get_route_data()
-    st.write("📋 Rutas actuales:")
+    st.write("Rutas actuales:")
     st.dataframe(route_data)
 
-    distancia = st.slider("📏 Distancia estimada (km)", 1.0, 100.0, 10.0)
-    hora = st.slider("🕓 Hora de salida", 0, 23, 9)
-    clima = st.selectbox("☁️ Condiciones climáticas", ["Soleado", "Nublado", "Lluvioso"])
+    distancia = st.slider("📏 Distancia (km)", 1.0, 100.0, 8.0)
+    hora = st.slider("🕓 Hora de salida", 0, 23, 10)
+    clima = st.selectbox("🌦 Clima actual", ["Soleado", "Nublado", "Lluvioso"])
 
-    clima_onehot = {
+    clima_vec = {
         "Clima_Lluvioso": int(clima == "Lluvioso"),
         "Clima_Nublado": int(clima == "Nublado"),
         "Clima_Soleado": int(clima == "Soleado")
@@ -35,14 +32,14 @@ def show_route():
     entrada = {
         "Distancia": distancia,
         "Hora": hora,
-        **clima_onehot
+        **clima_vec
     }
 
-    prediccion = predict_time(np.array([list(entrada.values())]))
+    entrada_array = np.array([list(entrada.values())])
+    pred = predict_time(entrada_array)
+    st.success(f"⏱ Tiempo estimado de entrega: {round(pred, 2)} minutos")
 
-    st.success(f"⏱️ Tiempo estimado de entrega: {round(prediccion, 2)} minutos")
-    
-    if hora < 6 or hora > 18:
-        st.warning("⚠️ Evite salir en horas nocturnas por seguridad.")
+    if hora < 7 or hora > 19:
+        st.warning("⚠️ Franja no recomendada. Riesgo de congestión o poca visibilidad.")
     else:
-        st.info("✅ Buen horario para la entrega.")
+        st.info("✅ Franja óptima para entregar.")

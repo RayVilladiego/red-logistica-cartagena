@@ -1,26 +1,35 @@
+# app.py
 import streamlit as st
-from login import login_section
-from mapa import mapa_section
-from dashboard import dashboard_section
-from gestion_pedidos import pedidos_section
+from auth import login
+from dashboard import show_dashboard
+from tracking import show_tracking
+from orders import show_orders
+from home import show_home
+from routes import show_routes
+from database import init_db
 
-st.set_page_config(page_title="Red Logística Cartagena", layout="wide")
-
-# Sesión de usuario
-if "usuario" not in st.session_state:
-    st.session_state["usuario"] = None
+# Inicializar la base de datos
+init_db()
 
 # Login
-if st.session_state["usuario"] is None:
-    login_section()
-else:
-    st.sidebar.title(f"Bienvenido, {st.session_state['usuario']}")
-    seccion = st.sidebar.radio("Navegación", ["Mapa", "Dashboard", "Gestión de Pedidos"])
+if 'authenticated' not in st.session_state:
+    st.session_state['authenticated'] = False
 
-    if seccion == "Mapa":
-        mapa_section()
-    elif seccion == "Dashboard":
-        dashboard_section()
-    elif seccion == "Gestión de Pedidos":
-        pedidos_section()
+if not st.session_state['authenticated']:
+    login()
+else:
+    st.sidebar.title("Navegación")
+    page = st.sidebar.radio("Ir a", ["Inicio", "Dashboard", "Seguimiento", "Pedidos", "Rutas"])
+
+    if page == "Inicio":
+        show_home()
+    elif page == "Dashboard":
+        show_dashboard()
+    elif page == "Seguimiento":
+        show_tracking()
+    elif page == "Pedidos":
+        show_orders()
+    elif page == "Rutas":
+        show_routes()
+
 

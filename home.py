@@ -1,17 +1,16 @@
+# home.py
 import streamlit as st
 
 def show_home():
-    st.title("📍 Sistema de Gestión Logística Inteligente")
+    st.title("🏠 Bienvenido a la Red Logística Inteligente")
     st.markdown("""
-        Bienvenido a la plataforma de predicción logística con mapas interactivos, predicción de rutas, seguimiento en tiempo real y KPIs logísticos integrados.
-
-        ---  
-        **Opciones disponibles:**  
-        - Predicción de entrega por red neuronal  
-        - Visualización de rutas con congestión  
-        - Dashboard de KPIs  
-        - Seguimiento de pedidos en tiempo real  
-        - Gestión de entregas por GPS
-
-        ---
+    Esta plataforma permite el seguimiento en tiempo real de entregas, rutas inteligentes, visualización de KPI's y análisis predictivo mediante redes neuronales.
+    
+    ### Funcionalidades principales:
+    - Visualización del **Dashboard logístico**
+    - Seguimiento en tiempo real de pedidos
+    - Predicción de rutas y tiempos estimados
+    - Gestión de pedidos desde un solo lugar
+    
+    Selecciona una opción en el menú lateral para comenzar.
     """)

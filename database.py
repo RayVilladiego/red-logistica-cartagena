@@ -1,10 +1,8 @@
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql+asyncpg://usuario:contraseña@localhost/dbname"
+DATABASE_URL = "postgresql://usuario:contraseña@localhost/dbname"
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-metadata = MetaData()

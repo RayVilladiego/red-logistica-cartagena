@@ -1,12 +1,8 @@
 import streamlit as st
 import pandas as pd
-from database import get_order_data
 
-def show_orders():
-    st.subheader("🧾 Gestión de Pedidos")
-    df = get_order_data()
-    st.dataframe(df)
+def mostrar_pedidos(df_pedidos):
+    st.header("📝 Pedidos")
+    st.dataframe(df_pedidos)
 
-    if st.button("📤 Exportar a Excel"):
-        df.to_excel("pedidos_export.xlsx", index=False)
-        st.success("Archivo exportado como 'pedidos_export.xlsx'")
+    # Aquí añade opciones para actualizar estado, agregar pedidos, etc.

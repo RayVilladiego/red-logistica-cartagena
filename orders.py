@@ -1,8 +1,5 @@
-from fastapi import APIRouter
-
-router = APIRouter()
-
-@router.get("/orders")
-def get_orders():
-    # Aquí iría la lógica para listar órdenes
-    return [{"id": 1, "description": "Orden 1"}, {"id": 2, "description": "Orden 2"}]
+def orders_view(pedidos):
+    import streamlit as st
+    st.title("Gestión de Órdenes")
+    for pedido in pedidos:
+        st.write(f"ID: {pedido['id']} - {pedido['origen']} → {pedido['destino']} - Estado: {pedido['estado']}")

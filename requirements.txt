@@ -1,11 +1,14 @@
-fastapi
-uvicorn
+streamlit
+pandas
+numpy
+folium
+streamlit-folium
+xlsxwriter
+python-multipart
+passlib[bcrypt]
+python-jose[cryptography]
 sqlalchemy
 databases[asyncpg]
 asyncpg
-passlib[bcrypt]
-python-jose[cryptography]
-pydantic
-streamlit
-python-multipart
+
 

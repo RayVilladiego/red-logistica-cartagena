@@ -1,18 +1,27 @@
-import streamlit as st
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from database import SessionLocal
+from models import User
+from auth import verify_password, create_access_token
 
-# Simulación de usuarios
-USUARIOS = {
-    "admin": "1234",
-    "operador": "5678"
-}
+router = APIRouter()
 
-def login():
-    st.title("Login de Usuario")
-    usuario = st.text_input("Usuario")
-    contraseña = st.text_input("Contraseña", type="password")
-    if st.button("Iniciar sesión"):
-        if usuario in USUARIOS and USUARIOS[usuario] == contraseña:
-            st.success(f"Bienvenido, {usuario}!")
-            st.session_state["autenticado"] = True
-        else:
-            st.error("Credenciales incorrectas")
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@router.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == form_data.username).first()
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario o contraseña incorrectos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}

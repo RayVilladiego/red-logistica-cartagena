@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
-DATABASE_URL = "postgresql://postgres:Brunokaliq12345*@db.aiiqkmslpfcleptmejfk.supabase.co:5432/postgres"
+DATABASE_URL = "postgresql://postgres:Brunokaliq12345%2A@db.aiiqkmslpfcleptmejfk.supabase.co:5432/postgres"
 engine = create_engine(DATABASE_URL)
 
 # --- FUNCIONES AUXILIARES ---

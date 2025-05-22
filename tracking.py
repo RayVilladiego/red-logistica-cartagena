@@ -1,31 +1,31 @@
-import streamlit as st
-import time
-import pydeck as pdk
+import pandas as pd
+import numpy as np
+import pickle
+from tensorflow.keras.models import load_model
 
-COORD_ORIGEN = [10.4001, -75.5144]
-COORD_DESTINO = [10.4236, -75.5336]
+# Rutas relativas a los archivos guardados
+MODEL_PATH = 'modelo_entrega (1).h5'
+SCALER_PATH = 'scaler_entrega (1).pkl'
+ENCODER_PATH = 'encoder_entrega.pkl'
 
+# Carga los objetos solo una vez (singleton)
+def cargar_modelo():
+    model = load_model(MODEL_PATH)
+    with open(SCALER_PATH, 'rb') as f:
+        scaler = pickle.load(f)
+    with open(ENCODER_PATH, 'rb') as f:
+        encoder = pickle.load(f)
+    return model, scaler, encoder
 
-def show_tracking():
-    st.subheader("📍 Simulación de Seguimiento de Entrega")
+modelo, scaler, encoder = cargar_modelo()
 
-    progress = st.slider("Progreso del vehículo (%)", 0, 100, 0)
-    lat = COORD_ORIGEN[0] + (COORD_DESTINO[0] - COORD_ORIGEN[0]) * (progress / 100)
-    lon = COORD_ORIGEN[1] + (COORD_DESTINO[1] - COORD_ORIGEN[1]) * (progress / 100)
+categorical_cols = ['Día', 'Zona', 'Clima', 'Tipo_Via']
+numerical_cols = ['Hora', 'Distancia', 'Velocidad_Promedio']
 
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=[{"position": [lon, lat]}],
-        get_position="position",
-        get_color="[255, 0, 0, 160]",
-        get_radius=150,
-    )
-
-    view_state = pdk.ViewState(
-        longitude=lon,
-        latitude=lat,
-        zoom=12,
-        pitch=40
-    )
-
-    st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
+def predecir_tiempo(df_nuevo):
+    # df_nuevo: DataFrame con columnas igual a entrenamiento
+    X_cat = encoder.transform(df_nuevo[categorical_cols])
+    X_num = scaler.transform(df_nuevo[numerical_cols])
+    X_proc = np.hstack([X_num, X_cat])
+    pred = modelo.predict(X_proc)
+    return pred.flatten()

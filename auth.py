@@ -1,26 +1,22 @@
-import streamlit as st
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
 
-# Usuarios de ejemplo — en producción usa base de datos segura
-USUARIOS = {
-    "admin": "1234",
-    "usuario": "pass"
-}
+SECRET_KEY = "tu_secreto_muy_seguro"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-def login():
-    st.sidebar.title("🔒 Login")
-    usuario = st.sidebar.text_input("Usuario")
-    clave = st.sidebar.text_input("Contraseña", type="password")
-    if st.sidebar.button("Ingresar"):
-        if usuario in USUARIOS and USUARIOS[usuario] == clave:
-            st.session_state['login'] = True
-            st.session_state['usuario'] = usuario
-            st.sidebar.success(f"Bienvenido, {usuario}!")
-        else:
-            st.sidebar.error("Usuario o contraseña incorrectos")
-    return st.session_state.get('login', False)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# En tu app principal:
-# if login():
-#    ... contenido protegido ...
-# else:
-#    st.warning("Por favor inicia sesión para continuar")
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt

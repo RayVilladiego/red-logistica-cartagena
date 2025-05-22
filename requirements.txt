@@ -1,6 +1,9 @@
-streamlit
-tensorflow
-pandas
-numpy
-scikit-learn
+fastapi
+uvicorn
 sqlalchemy
+databases[asyncpg]
+asyncpg
+passlib[bcrypt]
+python-jose[cryptography]
+pydantic
+streamlit

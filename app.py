@@ -1,32 +1,15 @@
-# app.py
+from flask import Flask, request, jsonify
+import pandas as pd
+from tracking import predecir_tiempo
 
-import streamlit as st
-from auth import show_login
-from dashboard import show_dashboard
-from tracking import show_tracking
-from orders import show_orders
-from routes import show_route
-from home import show_home
+app = Flask(__name__)
 
-# Diccionario de páginas con emojis y navegación
-PAGINAS = {
-    "🏠 Inicio": show_home,
-    "📊 Dashboard": show_dashboard,
-    "📦 Pedidos": show_orders,
-    "🛡️ Seguimiento": show_tracking,
-    "🬝 Ruta Inteligente": show_route
-}
+@app.route('/predecir', methods=['POST'])
+def predecir():
+    data = request.get_json()
+    df = pd.DataFrame([data])
+    pred = predecir_tiempo(df)
+    return jsonify({'tiempo_estimado': float(pred[0])})
 
-def main():
-    if "autenticado" not in st.session_state:
-        st.session_state["autenticado"] = False
-
-    if not st.session_state["autenticado"]:
-        show_login()
-    else:
-        st.sidebar.title("📋 Menú de Navegación")
-        seleccion = st.sidebar.radio("Ir a:", list(PAGINAS.keys()))
-        PAGINAS[seleccion]()
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(debug=True)

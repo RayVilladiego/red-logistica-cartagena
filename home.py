@@ -1,8 +1,4 @@
-import streamlit as st
-
-def mostrar_home():
-    st.title("🏠 Bienvenido a Logística Cartagena")
-    st.write("""
-        Sistema inteligente para predicción, seguimiento y optimización de entregas en Cartagena.  
-        Usa el menú lateral para navegar por las funcionalidades.
-    """)
+def home():
+    import streamlit as st
+    st.title("Bienvenido al Sistema de Logística")
+    st.write("Usa el menú para navegar entre las secciones.")

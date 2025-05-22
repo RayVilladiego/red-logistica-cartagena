@@ -1,11 +1,7 @@
-import streamlit as st
-import pandas as pd
-from database import get_kpi_data
+from tracking import predecir_tiempo
 
-def show_dashboard():
-    st.subheader("📊 KPIs de Entregas")
-    datos = get_kpi_data()
-    col1, col2, col3 = st.columns(3)
-    col1.metric("✅ Entregados", datos['entregados'])
-    col2.metric("🚚 En Ruta", datos['en_ruta'])
-    col3.metric("📦 Pendientes", datos['pendientes'])
+def mostrar_prediccion(datos):
+    df = pd.DataFrame([datos])
+    pred = predecir_tiempo(df)
+    print(f"Tiempo estimado: {pred[0]:.2f} minutos")
+    # Aquí agregar código para actualizar dashboard visualmente

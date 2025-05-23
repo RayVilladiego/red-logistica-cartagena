@@ -10,6 +10,8 @@ def main():
         st.session_state["logueado"] = False
 
     menu = ["Inicio", "Login", "Dashboard", "Órdenes", "Tracking", "Cerrar sesión"]
+    seleccion = st.sidebar.selectbox("Menu", menu)
+
 
     if not st.session_state["logueado"]:
         if st.sidebar.selectbox("Menu", menu) == "Login":
@@ -17,7 +19,7 @@ def main():
         else:
             home()
     else:
-        choice = st.sidebar.selectbox("Menu", menu)
+        choice = st.sidebar.radio("Ir a:", menu)
         if choice == "Inicio":
             home()
         elif choice == "Dashboard":

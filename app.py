@@ -2,6 +2,7 @@ import streamlit as st
 from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
+import pytz  # Para manejo de zona horaria
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -18,22 +19,18 @@ def get_orders():
 
 def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida):
     with engine.begin() as conn:
-        conn.execute(
-            text(
-                """
-                INSERT INTO orders (user_id, origen, destino, estado, tiempo_estimado_min, hora_salida)
-                VALUES (:user_id, :origen, :destino, :estado, :tiempo_estimado, :hora_salida)
-                """
-            ),
-            {
-                "user_id": user_id,
-                "origen": origen,
-                "destino": destino,
-                "estado": estado,
-                "tiempo_estimado": tiempo_estimado,
-                "hora_salida": hora_salida
-            }
-        )
+        sql = text("""
+            INSERT INTO orders (user_id, origen, destino, estado, tiempo_estimado_min, hora_salida)
+            VALUES (:user_id, :origen, :destino, :estado, :tiempo_estimado, :hora_salida)
+        """)
+        conn.execute(sql, {
+            "user_id": user_id,
+            "origen": origen,
+            "destino": destino,
+            "estado": estado,
+            "tiempo_estimado": tiempo_estimado,
+            "hora_salida": hora_salida
+        })
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
@@ -79,11 +76,15 @@ elif choice == "Agregar Pedido":
     destino = st.text_input("Destino")
     estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
     tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
-    hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
+
+    # Obtén la hora local con zona horaria correcta (Ejemplo para Bogotá)
+    tz = pytz.timezone('America/Bogota')
+    now_local = datetime.now(tz)
+    hora_salida = st.time_input("Hora de salida", value=now_local.time())
 
     if st.button("Registrar Pedido"):
-        # Combina fecha actual con hora seleccionada
-        fecha_hora_salida = datetime.combine(datetime.now().date(), hora_salida)
+        # Combina la fecha local con la hora seleccionada
+        fecha_hora_salida = datetime.combine(now_local.date(), hora_salida)
         insert_order(user_id, origen, destino, estado, tiempo_estimado, fecha_hora_salida)
         st.success("Pedido agregado correctamente")
         st.experimental_rerun()  # Recarga la app para ver cambios

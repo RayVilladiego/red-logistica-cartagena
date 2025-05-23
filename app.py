@@ -30,44 +30,18 @@ def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida)
             "tiempo_estimado": tiempo_estimado,
             "hora_salida": hora_salida
         })
+        # --- VERIFICACIÓN: contar registros después de insertar ---
+        result = conn.execute(text("SELECT COUNT(*) FROM orders"))
+        count = result.scalar()
+        st.info(f"Registros actuales en orders: {count}")
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
 menu = ["Dashboard", "Órdenes", "Usuarios", "Agregar Pedido"]
 choice = st.sidebar.radio("Ir a:", menu)
 
-# --- DASHBOARD ---
-if choice == "Dashboard":
-    st.title("📊 Dashboard de Logística")
-    orders = get_orders()
-    total = len(orders)
-    en_ruta = len(orders[orders['estado'] == "En ruta"])
-    entregados = len(orders[orders['estado'] == "Entregado"])
-    pendientes = len(orders[orders['estado'] == "Pendiente"])
-
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Pedidos", total)
-    col2.metric("Pendientes", pendientes)
-    col3.metric("En Ruta", en_ruta)
-    col4.metric("Entregados", entregados)
-    
-    st.subheader("Vista rápida de pedidos")
-    st.dataframe(orders)
-
-# --- ÓRDENES ---
-elif choice == "Órdenes":
-    st.title("📦 Órdenes Registradas")
-    orders = get_orders()
-    st.dataframe(orders)
-    
-# --- USUARIOS ---
-elif choice == "Usuarios":
-    st.title("👤 Usuarios Registrados")
-    users = get_users()
-    st.dataframe(users)
-    
-# --- AGREGAR PEDIDO ---
-elif choice == "Agregar Pedido":
+# --- AGREGAR PEDIDO (PRUEBA) ---
+if choice == "Agregar Pedido":
     st.title("➕ Agregar nuevo pedido")
     users = get_users()
     user_id = st.selectbox("Usuario", users["id"].tolist())
@@ -82,5 +56,29 @@ elif choice == "Agregar Pedido":
         try:
             insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida_dt)
             st.success("Pedido agregado correctamente")
-            get_orders.clear()  # Limpiar caché de pedidos para mostrar la tabla actualizada
-            orde
+
+            # --- CONSULTA DIRECTA SIN CACHÉ ---
+            with engine.connect() as conn:
+                df_real = pd.read_sql("SELECT * FROM orders", conn)
+            st.subheader("Pedidos directamente desde la BD (sin cache):")
+            st.dataframe(df_real)
+        except Exception as e:
+            st.error(f"Error al agregar pedido: {e}")
+
+# --- DASHBOARD ---
+elif choice == "Dashboard":
+    st.title("📊 Dashboard de Logística")
+    orders = get_orders()
+    st.dataframe(orders)
+
+# --- ÓRDENES ---
+elif choice == "Órdenes":
+    st.title("📦 Órdenes Registradas")
+    orders = get_orders()
+    st.dataframe(orders)
+
+# --- USUARIOS ---
+elif choice == "Usuarios":
+    st.title("👤 Usuarios Registrados")
+    users = get_users()
+    st.dataframe(users)

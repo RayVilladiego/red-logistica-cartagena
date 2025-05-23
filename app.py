@@ -52,4 +52,4 @@ if choice == "Dashboard":
     col4.metric("Entregados", entregados)
 
     st.subheader("Vista rápida de pedidos")
-    st.dataframe(order
+    st.dataframe(orders)

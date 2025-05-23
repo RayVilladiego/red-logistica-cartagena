@@ -1,7 +1,7 @@
 import streamlit as st
 from sqlalchemy import create_engine, text
 import pandas as pd
-from datetime import datetime, time
+from datetime import datetime
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -78,14 +78,9 @@ elif choice == "Agregar Pedido":
     hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
 
     if st.button("Registrar Pedido"):
-        # La hora se guarda como datetime (puedes ajustar según el tipo en la base de datos)
         hora_salida_dt = datetime.combine(datetime.now().date(), hora_salida)
         try:
             insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida_dt)
             st.success("Pedido agregado correctamente")
-            # Mostrar los pedidos actualizados
-            st.subheader("Vista rápida de pedidos")
-            orders = get_orders()
-            st.dataframe(orders)
-        except Exception as e:
-            st.error(f"Error al agregar pedido: {e}")
+            get_orders.clear()  # Limpiar caché de pedidos para mostrar la tabla actualizada
+            orde

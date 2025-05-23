@@ -11,6 +11,8 @@ sqlalchemy
 databases[asyncpg]
 asyncpg
 psycopg2-binary
+joblib
+
 
 
 

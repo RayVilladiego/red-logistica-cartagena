@@ -8,9 +8,11 @@ DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0
 engine = create_engine(DATABASE_URL)
 
 # --- FUNCIONES AUXILIARES ---
-@st.cache_data
 def get_users():
     return pd.read_sql("SELECT * FROM users", engine)
+
+def get_orders():
+    return pd.read_sql("SELECT * FROM orders", engine)
 
 def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida):
     insert_sql = text("""
@@ -35,8 +37,7 @@ choice = st.sidebar.radio("Ir a:", menu)
 # --- DASHBOARD ---
 if choice == "Dashboard":
     st.title("📊 Dashboard de Logística")
-    with engine.connect() as conn:
-        orders = pd.read_sql("SELECT * FROM orders", conn)
+    orders = get_orders()
     st.info(f"Total de pedidos en orders: {len(orders)}")
     total = len(orders)
     en_ruta = len(orders[orders['estado'] == "En ruta"])
@@ -55,8 +56,7 @@ if choice == "Dashboard":
 # --- ÓRDENES ---
 elif choice == "Órdenes":
     st.title("📦 Órdenes Registradas")
-    with engine.connect() as conn:
-        orders = pd.read_sql("SELECT * FROM orders", conn)
+    orders = get_orders()
     st.info(f"Total de pedidos en orders: {len(orders)}")
     st.dataframe(orders)
     
@@ -73,4 +73,19 @@ elif choice == "Agregar Pedido":
     user_id = st.selectbox("Usuario", users["id"].tolist())
     origen = st.text_input("Origen")
     destino = st.text_input("Destino")
-    estado = st.selectbox("Es
+    estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
+    tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
+    hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
+
+    if st.button("Registrar Pedido"):
+        hora_salida_dt = datetime.combine(datetime.now().date(), hora_salida)
+        try:
+            insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida_dt)
+            st.success("Pedido agregado correctamente")
+            # Mostrar pedidos recién insertados en la misma vista
+            orders = get_orders()
+            st.subheader("Vista rápida de pedidos")
+            st.info(f"Total de pedidos en orders: {len(orders)}")
+            st.dataframe(orders)
+        except Exception as e:
+            st.error(f"Error al agregar pedido: {e}")

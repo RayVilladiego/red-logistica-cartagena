@@ -18,18 +18,22 @@ def get_orders():
 
 def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida):
     with engine.begin() as conn:
-        query = text("""
-            INSERT INTO orders (user_id, origen, destino, estado, tiempo_estimado_min, hora_salida)
-            VALUES (:user_id, :origen, :destino, :estado, :tiempo_estimado, :hora_salida)
-        """)
-        conn.execute(query, {
-            "user_id": user_id,
-            "origen": origen,
-            "destino": destino,
-            "estado": estado,
-            "tiempo_estimado": tiempo_estimado,
-            "hora_salida": hora_salida
-        })
+        conn.execute(
+            text(
+                """
+                INSERT INTO orders (user_id, origen, destino, estado, tiempo_estimado_min, hora_salida)
+                VALUES (:user_id, :origen, :destino, :estado, :tiempo_estimado, :hora_salida)
+                """
+            ),
+            {
+                "user_id": user_id,
+                "origen": origen,
+                "destino": destino,
+                "estado": estado,
+                "tiempo_estimado": tiempo_estimado,
+                "hora_salida": hora_salida
+            }
+        )
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
@@ -56,4 +60,30 @@ if choice == "Dashboard":
 
 # --- ÓRDENES ---
 elif choice == "Órdenes":
-    st.title("📦
+    st.title("📦 Órdenes Registradas")
+    orders = get_orders()
+    st.dataframe(orders)
+    
+# --- USUARIOS ---
+elif choice == "Usuarios":
+    st.title("👤 Usuarios Registrados")
+    users = get_users()
+    st.dataframe(users)
+    
+# --- AGREGAR PEDIDO ---
+elif choice == "Agregar Pedido":
+    st.title("➕ Agregar nuevo pedido")
+    users = get_users()
+    user_id = st.selectbox("Usuario", users["id"].tolist())
+    origen = st.text_input("Origen")
+    destino = st.text_input("Destino")
+    estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
+    tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
+    hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
+
+    if st.button("Registrar Pedido"):
+        # Combina fecha actual con hora seleccionada
+        fecha_hora_salida = datetime.combine(datetime.now().date(), hora_salida)
+        insert_order(user_id, origen, destino, estado, tiempo_estimado, fecha_hora_salida)
+        st.success("Pedido agregado correctamente")
+        st.experimental_rerun()  # Recarga la app para ver cambios

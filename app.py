@@ -1,5 +1,5 @@
 import streamlit as st
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 
@@ -18,13 +18,18 @@ def get_orders():
 
 def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida):
     with engine.begin() as conn:
-        conn.execute(
-            """
+        query = text("""
             INSERT INTO orders (user_id, origen, destino, estado, tiempo_estimado_min, hora_salida)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (user_id, origen, destino, estado, tiempo_estimado, hora_salida)
-        )
+            VALUES (:user_id, :origen, :destino, :estado, :tiempo_estimado, :hora_salida)
+        """)
+        conn.execute(query, {
+            "user_id": user_id,
+            "origen": origen,
+            "destino": destino,
+            "estado": estado,
+            "tiempo_estimado": tiempo_estimado,
+            "hora_salida": hora_salida
+        })
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
@@ -51,29 +56,4 @@ if choice == "Dashboard":
 
 # --- ÓRDENES ---
 elif choice == "Órdenes":
-    st.title("📦 Órdenes Registradas")
-    orders = get_orders()
-    st.dataframe(orders)
-    
-# --- USUARIOS ---
-elif choice == "Usuarios":
-    st.title("👤 Usuarios Registrados")
-    users = get_users()
-    st.dataframe(users)
-    
-# --- AGREGAR PEDIDO ---
-elif choice == "Agregar Pedido":
-    st.title("➕ Agregar nuevo pedido")
-    users = get_users()
-    user_id = st.selectbox("Usuario", users["id"].tolist())
-    origen = st.text_input("Origen")
-    destino = st.text_input("Destino")
-    estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
-    tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
-    hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
-
-    if st.button("Registrar Pedido"):
-        insert_order(user_id, origen, destino, estado, tiempo_estimado, datetime.combine(datetime.now().date(), hora_salida))
-        st.success("Pedido agregado correctamente")
-        st.experimental_rerun()  # Recarga la app para ver cambios
-
+    st.title("📦

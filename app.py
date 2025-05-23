@@ -3,7 +3,8 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
-
+from auth import verify_password
+import hashlib
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -31,13 +32,44 @@ def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida)
             "hora_salida": hora_salida
         })
 
+# --- LOGIN ---
+def login_block():
+    st.title("🔒 Iniciar sesión")
+    users = get_users()
+    usernames = users["username"].tolist() if "username" in users else users["nombre"].tolist()
+    username = st.selectbox("Usuario", usernames)
+    password = st.text_input("Contraseña", type="password")
+    if st.button("Ingresar"):
+        user_row = users[users["username"] == username].iloc[0]
+        if verify_password(password, user_row["hashed_password"]):
+            st.session_state["logueado"] = True
+            st.session_state["usuario"] = username
+            st.success("¡Sesión iniciada correctamente!")
+            st.experimental_rerun()
+        else:
+            st.error("Usuario o contraseña incorrectos")
+    st.stop()
+
+# --- CONTROL DE SESIÓN ---
+if "logueado" not in st.session_state:
+    st.session_state["logueado"] = False
+
+if not st.session_state["logueado"]:
+    login_block()
+
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
-menu = ["Dashboard", "Órdenes", "Usuarios", "Agregar Pedido"]
+menu = ["Dashboard", "Órdenes", "Usuarios", "Agregar Pedido", "Predicción", "Cerrar sesión"]
 choice = st.sidebar.radio("Ir a:", menu)
 
+# --- CERRAR SESIÓN ---
+if choice == "Cerrar sesión":
+    st.session_state["logueado"] = False
+    st.success("Sesión cerrada")
+    st.experimental_rerun()
+
 # --- DASHBOARD ---
-if choice == "Dashboard":
+elif choice == "Dashboard":
     st.title("📊 Dashboard de Logística")
     orders = get_orders()
     st.info(f"Total de pedidos en orders: {len(orders)}")
@@ -91,3 +123,9 @@ elif choice == "Agregar Pedido":
             st.dataframe(orders)
         except Exception as e:
             st.error(f"Error al agregar pedido: {e}")
+
+# --- PREDICCIÓN (modelo ML/DL) ---
+elif choice == "Predicción":
+    st.title("🔮 Predicción de entrega")
+    predict_view()  # Llama tu vista/modelo predictivo importado de predict.py
+

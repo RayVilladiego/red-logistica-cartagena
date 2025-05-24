@@ -1,5 +1,3 @@
-# about.py
-
 import streamlit as st
 
 def show_about():
@@ -49,3 +47,4 @@ git clone https://github.com/tuusuario/red-logistica-cartagena.git
 cd red-logistica-cartagena
 pip install -r requirements.txt
 streamlit run app.py
+

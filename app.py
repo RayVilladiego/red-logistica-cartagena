@@ -30,17 +30,13 @@ def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida)
             "hora_salida": hora_salida
         })
 
-# --- LOGIN ---
+# --- LOGIN (FIJO: admin / 1234) ---
 def login_block():
     st.title("🔒 Iniciar sesión")
-    users = get_users()
-    usernames = users["username"].tolist() if "username" in users else users["nombre"].tolist()
-    username = st.selectbox("Usuario", usernames)
+    username = st.selectbox("Usuario", ["admin"])
     password = st.text_input("Contraseña", type="password")
     if st.button("Ingresar"):
-        user_row = users[users["username"] == username].iloc[0]
-        # Compara contraseñas en texto plano
-        if password == user_row["hashed_password"]:
+        if username == "admin" and password == "1234":
             st.session_state["logueado"] = True
             st.session_state["usuario"] = username
             st.success("¡Sesión iniciada correctamente!")

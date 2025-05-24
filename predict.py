@@ -6,7 +6,6 @@ from tensorflow.keras.models import load_model
 def predict_view():
     st.title("🔮 Predicción del Tiempo de Entrega")
 
-    # Cargar los modelos SOLO UNA VEZ
     @st.cache_resource
     def load_models():
         model = load_model("modelo_entrega.h5")
@@ -16,23 +15,19 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # Opciones (pon aquí tus zonas reales)
-    zonas = [
-        "Cartagena", "Centro de Cartagena", "Mamonal", "Crespo", "Getsemaní", "Bocagrande",
-        "Manga", "Pie de la Popa", "La Boquilla", "El Bosque"
-    ]
-    climas = ["Soleado", "Nublado", "Lluvioso", "Tormenta"]  # Cambia según tus categorías reales
+    # Obtén las categorías válidas
+    categorias_origen = encoder.categories_[0]
+    categorias_destino = encoder.categories_[1]
+    categorias_clima = encoder.categories_[2]
 
-    # Entradas del usuario
-    origen = st.selectbox("Zona Origen", zonas)
-    destino = st.selectbox("Zona Destino", zonas)
-    hora_salida = st.text_input("Hora de salida (hh:mm)", value="08:00")
-    clima = st.selectbox("Clima", climas)
+    origen = st.selectbox("Origen", categorias_origen)
+    destino = st.selectbox("Destino", categorias_destino)
+    clima = st.selectbox("Clima", categorias_clima)
+    hora_salida = st.time_input("Hora de salida")  # si la hora es numérica, deja el input
 
-    # Formatear la entrada para el encoder (debe tener 4 campos en el orden correcto)
     if st.button("Predecir"):
         try:
-            X = np.array([[origen, destino, hora_salida, clima]])
+            X = np.array([[origen, destino, clima, str(hora_salida)]])
             X_encoded = encoder.transform(X)
             X_scaled = scaler.transform(X_encoded)
             pred = model.predict(X_scaled)

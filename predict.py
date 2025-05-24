@@ -31,8 +31,7 @@ def predict_view():
 
     if st.button("Predecir"):
         try:
-            # Convierte la matriz dispersa a densa con toarray()
-            X_cat = encoder.transform([[dia, zona, clima, tipo_via]]).toarray()
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # sin .toarray()
             X_num = np.array([[hora, distancia_km, velocidad_prom]])
             X_num_scaled = scaler.transform(X_num)
             X_processed = np.hstack([X_num_scaled, X_cat])

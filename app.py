@@ -3,7 +3,6 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
-from about import show_about  # Importa el mensaje de bienvenida
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -59,10 +58,9 @@ if "logueado" not in st.session_state:
 if not st.session_state["logueado"]:
     login_block()
 
-# --- MENÚ LATERAL: Incluye Presentación primero ---
+# --- MENÚ LATERAL: SIN Presentación ---
 st.sidebar.title("Menú")
 menu = [
-    "Presentación",
     "Dashboard",
     "Órdenes",
     "Usuarios",
@@ -73,10 +71,7 @@ menu = [
 choice = st.sidebar.radio("Ir a:", menu)
 
 # --- RUTEO PRINCIPAL ---
-if choice == "Presentación":
-    show_about()
-
-elif choice == "Dashboard":
+if choice == "Dashboard":
     st.title("📊 Dashboard de Logística")
     orders = get_orders()
     st.info(f"Total de pedidos en orders: {len(orders)}")
@@ -90,7 +85,7 @@ elif choice == "Dashboard":
     col2.metric("Pendientes", pendientes)
     col3.metric("En Ruta", en_ruta)
     col4.metric("Entregados", entregados)
-    
+
     st.subheader("Vista rápida de pedidos")
     st.dataframe(orders)
 
@@ -98,4 +93,40 @@ elif choice == "Órdenes":
     st.title("📦 Órdenes Registradas")
     orders = get_orders()
     st.info(f"Total de pedidos en orders: {len(orders)}")
-    s
+    st.dataframe(orders)
+
+elif choice == "Usuarios":
+    st.title("👤 Usuarios Registrados")
+    users = get_users()
+    st.dataframe(users)
+
+elif choice == "Agregar Pedido":
+    st.title("➕ Agregar nuevo pedido")
+    users = get_users()
+    user_id = st.selectbox("Usuario", users["id"].tolist())
+    origen = st.selectbox("Origen", zonas)
+    destino = st.selectbox("Destino", zonas)
+    estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
+    tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
+    hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
+
+    if st.button("Registrar Pedido"):
+        hora_salida_dt = datetime.combine(datetime.now().date(), hora_salida)
+        try:
+            insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida_dt)
+            st.success("Pedido agregado correctamente")
+            orders = get_orders()
+            st.subheader("Vista rápida de pedidos")
+            st.info(f"Total de pedidos en orders: {len(orders)}")
+            st.dataframe(orders)
+        except Exception as e:
+            st.error(f"Error al agregar pedido: {e}")
+
+elif choice == "Predicción":
+    st.title("🔮 Predicción de entrega")
+    predict_view()
+
+elif choice == "Cerrar sesión":
+    st.session_state["logueado"] = False
+    st.success("Sesión cerrada")
+    st.experimental_rerun()

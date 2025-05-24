@@ -31,15 +31,11 @@ def predict_view():
 
     if st.button("Predecir"):
         try:
-            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
+            # Convierte la matriz dispersa a densa con toarray()
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]]).toarray()
             X_num = np.array([[hora, distancia_km, velocidad_prom]])
-            
-            # Escalar solo las numéricas
             X_num_scaled = scaler.transform(X_num)
-            
-            # Concatenar numéricas escaladas + categóricas codificadas (sin escalar)
             X_processed = np.hstack([X_num_scaled, X_cat])
-            
             pred = model.predict(X_processed)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:

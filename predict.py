@@ -15,8 +15,15 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # Acceso robusto a las categorías
-    if hasattr(encoder, 'transformers_'):
+    encoder_type = type(encoder).__name__
+    st.write("Tipo de encoder cargado:", encoder_type)
+
+    if hasattr(encoder, 'categories_'):
+        # Es OneHotEncoder directamente
+        categorias_zona_destino = encoder.categories_[0]
+        categorias_clima = encoder.categories_[1]
+        categorias_tipo_via = encoder.categories_[2]
+    elif hasattr(encoder, 'transformers_'):
         categorias_zona_destino = encoder.transformers_[0][1].categories_[0]
         categorias_clima = encoder.transformers_[0][1].categories_[1]
         categorias_tipo_via = encoder.transformers_[0][1].categories_[2]

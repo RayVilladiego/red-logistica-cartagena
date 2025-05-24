@@ -15,7 +15,6 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # Listas fijas para diagnóstico
     dias = ['Domingo', 'Jueves', 'Lunes', 'Martes', 'Miércoles', 'Sábado', 'Viernes']
     zonas = ['Bocagrande', 'Centro', 'Getsemaní', 'La Boquilla', 'Mamonal']
     climas = ['Lluvioso', 'Nublado', 'Soleado']
@@ -26,28 +25,21 @@ def predict_view():
     velocidad_prom = st.number_input("Velocidad promedio (km/h)", min_value=1, max_value=100, value=30, step=1)
 
     dia = st.selectbox("Día de la semana", dias)
-    st.write("Días disponibles:", dias)
-    st.write("Día seleccionado:", dia)
-
     zona = st.selectbox("Zona Destino", zonas)
-    st.write("Zonas disponibles:", zonas)
-    st.write("Zona seleccionada:", zona)
-
     clima = st.selectbox("Clima", climas)
-    st.write("Climas disponibles:", climas)
-    st.write("Clima seleccionado:", clima)
-
     tipo_via = st.selectbox("Tipo de vía", tipos_via)
-    st.write("Tipos de vía disponibles:", tipos_via)
-    st.write("Tipo de vía seleccionado:", tipo_via)
 
     if st.button("Predecir"):
-        X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
-        X_num = np.array([[hora, distancia_km, velocidad_prom]])
-        X_processed = np.hstack([X_num, X_cat])
-
         try:
+            # Solo las categóricas al encoder
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
+            # Solo las numéricas en array aparte
+            X_num = np.array([[hora, distancia_km, velocidad_prom]])
+            # Concatenar numéricas + codificadas
+            X_processed = np.hstack([X_num, X_cat])
+            # Escalar todo junto
             X_scaled = scaler.transform(X_processed)
+            # Predecir
             pred = model.predict(X_scaled)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:

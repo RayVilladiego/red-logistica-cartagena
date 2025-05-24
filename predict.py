@@ -15,28 +15,30 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # Listas de categorías según encoder (orden y valores exactos)
-    dias = encoder.categories_[0]
-    zonas = encoder.categories_[1]
-    climas = encoder.categories_[2]
-    tipos_via = encoder.categories_[3]
+    # Definir las listas categóricas EXACTAS en el orden confirmado
+    dias = ['Domingo', 'Jueves', 'Lunes', 'Martes', 'Miércoles', 'Sábado', 'Viernes']
+    zonas = ['Bocagrande', 'Centro', 'Getsemaní', 'La Boquilla', 'Mamonal']
+    climas = ['Lluvioso', 'Nublado', 'Soleado']
+    tipos_via = ['Principal', 'Secundaria', 'Terciaria']
 
-    # Inputs del usuario
+    # Inputs numéricos
     hora = st.number_input("Hora de salida (0-23)", min_value=0, max_value=23, value=8)
     distancia_km = st.number_input("Distancia (km)", min_value=0.1, max_value=100.0, value=5.0, step=0.1)
     velocidad_prom = st.number_input("Velocidad promedio (km/h)", min_value=1, max_value=100, value=30, step=1)
-    dia = st.selectbox("Día", dias)
-    zona = st.selectbox("Zona", zonas)
+
+    # Inputs categóricos con listas fijas
+    dia = st.selectbox("Día de la semana", dias)
+    zona = st.selectbox("Zona Destino", zonas)
     clima = st.selectbox("Clima", climas)
     tipo_via = st.selectbox("Tipo de vía", tipos_via)
 
     if st.button("Predecir"):
-        # Construye la matriz de entrada respetando el orden de entrenamiento:
-        # Primero variables numéricas
-        X_num = np.array([[hora, distancia_km, velocidad_prom]])
-        # Luego variables categóricas codificadas
+        # Construir matriz de entrada para el encoder y scaler
+        # NOTA: encoder solo procesa las categóricas, los numéricos van aparte
         X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
-        # Concatenar ambas matrices horizontalmente
+        X_num = np.array([[hora, distancia_km, velocidad_prom]])
+
+        # Concatenar numéricos + categóricos codificados
         X_processed = np.hstack([X_num, X_cat])
 
         try:

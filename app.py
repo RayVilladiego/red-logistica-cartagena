@@ -46,7 +46,7 @@ def login_block():
             st.session_state["logueado"] = True
             st.session_state["usuario"] = username
             st.success("¡Sesión iniciada correctamente!")
-            st.experimental_rerun()
+            # st.experimental_rerun()  # ELIMINADO
         else:
             st.error("Usuario o contraseña incorrectos")
     st.stop()
@@ -58,7 +58,7 @@ if "logueado" not in st.session_state:
 if not st.session_state["logueado"]:
     login_block()
 
-# --- MENÚ LATERAL: SIN Presentación ---
+# --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
 menu = [
     "Dashboard",
@@ -129,4 +129,4 @@ elif choice == "Predicción":
 elif choice == "Cerrar sesión":
     st.session_state["logueado"] = False
     st.success("Sesión cerrada")
-    st.experimental_rerun()
+    # st.experimental_rerun()  # ELIMINADO

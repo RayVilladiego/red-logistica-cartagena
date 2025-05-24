@@ -8,6 +8,12 @@ from predict import predict_view
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
 engine = create_engine(DATABASE_URL)
 
+# --- LISTA DE ZONAS DISPONIBLES ---
+zonas = [
+    "Mamonal", "Bocagrande", "Centro", "Getsemaní", "El Pozón", "San Felipe", "Crespo", "Pie de la Popa",
+    "Manga", "Los Alpes", "La Boquilla", "El Bosque", "El Laguito", "Otro"
+]
+
 # --- FUNCIONES AUXILIARES ---
 def get_users():
     return pd.read_sql("SELECT * FROM users", engine)
@@ -100,8 +106,8 @@ elif choice == "Agregar Pedido":
     st.title("➕ Agregar nuevo pedido")
     users = get_users()
     user_id = st.selectbox("Usuario", users["id"].tolist())
-    origen = st.text_input("Origen")
-    destino = st.text_input("Destino")
+    origen = st.selectbox("Origen", zonas)    # <--- CAMBIADO
+    destino = st.selectbox("Destino", zonas)  # <--- CAMBIADO
     estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
     tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
     hora_salida = st.time_input("Hora de salida", value=datetime.now().time())

@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
+from about import show_about  # Importa el mensaje de bienvenida
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -56,6 +57,7 @@ if "logueado" not in st.session_state:
     st.session_state["logueado"] = False
 
 if not st.session_state["logueado"]:
+    show_about()   # Mensaje de bienvenida
     login_block()
 
 # --- MENÚ LATERAL ---
@@ -106,8 +108,8 @@ elif choice == "Agregar Pedido":
     st.title("➕ Agregar nuevo pedido")
     users = get_users()
     user_id = st.selectbox("Usuario", users["id"].tolist())
-    origen = st.selectbox("Origen", zonas)    # <--- CAMBIADO
-    destino = st.selectbox("Destino", zonas)  # <--- CAMBIADO
+    origen = st.selectbox("Origen", zonas)
+    destino = st.selectbox("Destino", zonas)
     estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
     tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
     hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
@@ -117,7 +119,6 @@ elif choice == "Agregar Pedido":
         try:
             insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida_dt)
             st.success("Pedido agregado correctamente")
-            # Mostrar pedidos recién insertados en la misma vista
             orders = get_orders()
             st.subheader("Vista rápida de pedidos")
             st.info(f"Total de pedidos en orders: {len(orders)}")
@@ -128,4 +129,4 @@ elif choice == "Agregar Pedido":
 # --- PREDICCIÓN (modelo ML/DL) ---
 elif choice == "Predicción":
     st.title("🔮 Predicción de entrega")
-    predict_view()  # Llama tu vista/modelo predictivo importado de predict.py
+    predict_view()  # Tu función de modelo predictivo

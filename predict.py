@@ -3,12 +3,6 @@ import numpy as np
 import joblib
 from tensorflow.keras.models import load_model
 
-# --- LISTA DE ZONAS ---
-zonas = [
-    "Mamonal", "Bocagrande", "Centro", "Getsemaní", "El Pozón", "San Felipe", "Crespo", "Pie de la Popa",
-    "Manga", "Los Alpes", "La Boquilla", "El Bosque", "El Laguito", "Otro"
-]
-
 def predict_view():
     st.title("🔮 Predicción del Tiempo de Entrega")
 
@@ -22,17 +16,23 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # Entradas del usuario
-    origen = st.selectbox("Origen", zonas)
-    destino = st.selectbox("Destino", zonas)
-    hora_salida = st.time_input("Hora de salida")
+    # Opciones (pon aquí tus zonas reales)
+    zonas = [
+        "Cartagena", "Centro de Cartagena", "Mamonal", "Crespo", "Getsemaní", "Bocagrande",
+        "Manga", "Pie de la Popa", "La Boquilla", "El Bosque"
+    ]
+    climas = ["Soleado", "Nublado", "Lluvioso", "Tormenta"]  # Cambia según tus categorías reales
 
-    # Ajusta aquí los features según tu modelo
+    # Entradas del usuario
+    origen = st.selectbox("Zona Origen", zonas)
+    destino = st.selectbox("Zona Destino", zonas)
+    hora_salida = st.text_input("Hora de salida (hh:mm)", value="08:00")
+    clima = st.selectbox("Clima", climas)
+
+    # Formatear la entrada para el encoder (debe tener 4 campos en el orden correcto)
     if st.button("Predecir"):
-        # Preprocesamiento (ajusta según lo que espere tu encoder)
-        X = np.array([[origen, destino, str(hora_salida)]])
         try:
-            # Codifica y escala (ajusta estos pasos según tu pipeline real)
+            X = np.array([[origen, destino, hora_salida, clima]])
             X_encoded = encoder.transform(X)
             X_scaled = scaler.transform(X_encoded)
             pred = model.predict(X_scaled)

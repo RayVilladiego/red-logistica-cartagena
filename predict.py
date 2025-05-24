@@ -1,16 +1,25 @@
 import streamlit as st
-import joblib
 import numpy as np
+import joblib
+import os
 
 def predict_view():
     st.title("🔮 Predicción del Tiempo de Entrega")
 
-    # Cargar los modelos entrenados SOLO UNA VEZ
     @st.cache_resource
     def load_models():
-        model = joblib.load("modelo_entrega.h5")
-        encoder = joblib.load("encoder_entrega.pkl")
-        scaler = joblib.load("scaler_entrega.pkl")
+        modelo_path = "modelo_entrega.h5"
+        encoder_path = "encoder_entrega.pkl"
+        scaler_path = "scaler_entrega.pkl"
+        
+        # Detecta si es keras o joblib
+        try:
+            from tensorflow.keras.models import load_model
+            model = load_model(modelo_path)
+        except Exception:
+            model = joblib.load(modelo_path)
+        encoder = joblib.load(encoder_path)
+        scaler = joblib.load(scaler_path)
         return model, encoder, scaler
 
     model, encoder, scaler = load_models()
@@ -20,16 +29,12 @@ def predict_view():
     destino = st.text_input("Destino")
     hora_salida = st.time_input("Hora de salida")
 
-    # ... Puedes pedir otros campos requeridos por tu modelo ...
+    # ... Otros campos si tu modelo los necesita ...
 
     if st.button("Predecir"):
-        # Preprocesar datos de entrada
-        X = np.array([[origen, destino, str(hora_salida)]])  # Ajústalo según tus features
-
-        # Ejemplo de pipeline (ajusta a tu flujo real):
+        # Preprocesamiento (ajusta esto según tu pipeline real)
+        X = np.array([[origen, destino, str(hora_salida)]])
         # X_encoded = encoder.transform(X)
         # X_scaled = scaler.transform(X_encoded)
         # pred = model.predict(X_scaled)
-        # st.success(f"Tiempo estimado: {pred[0]} minutos")
-
         st.info("Aquí va la predicción real con tu modelo")

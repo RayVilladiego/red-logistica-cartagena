@@ -6,7 +6,6 @@ from tensorflow.keras.models import load_model
 def predict_view():
     st.title("🔮 Predicción del Tiempo de Entrega")
 
-    # Solo carga los modelos una vez
     @st.cache_resource
     def load_models():
         model = load_model("modelo_entrega.h5")
@@ -16,12 +15,9 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # Extraer categorías válidas del encoder
     categorias_zona_destino = encoder.named_transformers_['cat'].categories_[0]
     categorias_clima = encoder.named_transformers_['cat'].categories_[1]
     categorias_tipo_via = encoder.named_transformers_['cat'].categories_[2]
-
-    st.header("Ingresa los datos de la entrega:")
 
     hora = st.number_input("Hora de salida (0-23)", min_value=0, max_value=23, value=8)
     dia_semana = st.selectbox(
@@ -35,7 +31,6 @@ def predict_view():
     distancia_km = st.number_input("Distancia (km)", min_value=0.1, max_value=100.0, value=5.0, step=0.1)
 
     if st.button("Predecir"):
-        # El orden de las columnas debe ser igual al de entrenamiento
         X_new = np.array([[hora, dia_semana, zona_destino, clima, tipo_via, distancia_km]])
         try:
             X_encoded = encoder.transform(X_new)

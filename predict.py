@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import joblib
 from tensorflow.keras.models import load_model
-from sklearn.compose import ColumnTransformer
 
 def predict_view():
     st.title("🔮 Predicción del Tiempo de Entrega")
@@ -15,10 +14,6 @@ def predict_view():
         return model, encoder, scaler
 
     model, encoder, scaler = load_models()
-
-    # Diagnóstico: mostrar tipo de encoder
-    st.write("Tipo de encoder:", type(encoder))
-    st.write("¿Es ColumnTransformer?:", isinstance(encoder, ColumnTransformer))
 
     dias = ['Domingo', 'Jueves', 'Lunes', 'Martes', 'Miércoles', 'Sábado', 'Viernes']
     zonas = ['Bocagrande', 'Centro', 'Getsemaní', 'La Boquilla', 'Mamonal']
@@ -35,9 +30,11 @@ def predict_view():
     tipo_via = st.selectbox("Tipo de vía", tipos_via)
 
     if st.button("Predecir"):
+        inputs_categoricos = [dia, zona, clima, tipo_via]
+        st.write("Categorical input to encoder.transform():", inputs_categoricos)
+
         try:
-            # Aquí mantén tu código de predicción habitual
-            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
+            X_cat = encoder.transform([inputs_categoricos])
             X_num = np.array([[hora, distancia_km, velocidad_prom]])
             X_processed = np.hstack([X_num, X_cat])
             X_scaled = scaler.transform(X_processed)

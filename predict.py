@@ -30,15 +30,17 @@ def predict_view():
     tipo_via = st.selectbox("Tipo de vía", tipos_via)
 
     if st.button("Predecir"):
-        inputs_categoricos = [dia, zona, clima, tipo_via]
-        st.write("Categorical input to encoder.transform():", inputs_categoricos)
-
         try:
-            X_cat = encoder.transform([inputs_categoricos])
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
             X_num = np.array([[hora, distancia_km, velocidad_prom]])
-            X_processed = np.hstack([X_num, X_cat])
-            X_scaled = scaler.transform(X_processed)
-            pred = model.predict(X_scaled)
+            
+            # Escalar solo las numéricas
+            X_num_scaled = scaler.transform(X_num)
+            
+            # Concatenar numéricas escaladas + categóricas codificadas (sin escalar)
+            X_processed = np.hstack([X_num_scaled, X_cat])
+            
+            pred = model.predict(X_processed)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")

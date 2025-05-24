@@ -15,10 +15,18 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # Acceso correcto a las categorías
-    categorias_zona_destino = encoder.transformers_[0][1].categories_[0]
-    categorias_clima = encoder.transformers_[0][1].categories_[1]
-    categorias_tipo_via = encoder.transformers_[0][1].categories_[2]
+    # Acceso robusto a las categorías
+    if hasattr(encoder, 'transformers_'):
+        categorias_zona_destino = encoder.transformers_[0][1].categories_[0]
+        categorias_clima = encoder.transformers_[0][1].categories_[1]
+        categorias_tipo_via = encoder.transformers_[0][1].categories_[2]
+    elif hasattr(encoder, 'transformers'):
+        categorias_zona_destino = encoder.transformers[0][1].categories_[0]
+        categorias_clima = encoder.transformers[0][1].categories_[1]
+        categorias_tipo_via = encoder.transformers[0][1].categories_[2]
+    else:
+        st.error("No se pudieron encontrar las categorías en el encoder.")
+        return
 
     hora = st.number_input("Hora de salida (0-23)", min_value=0, max_value=23, value=8)
     dia_semana = st.selectbox(

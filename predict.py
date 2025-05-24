@@ -1,25 +1,17 @@
 import streamlit as st
 import numpy as np
 import joblib
-import os
+from tensorflow.keras.models import load_model
 
 def predict_view():
     st.title("🔮 Predicción del Tiempo de Entrega")
 
+    # Cargar los modelos SOLO UNA VEZ
     @st.cache_resource
     def load_models():
-        modelo_path = "modelo_entrega.h5"
-        encoder_path = "encoder_entrega.pkl"
-        scaler_path = "scaler_entrega.pkl"
-        
-        # Detecta si es keras o joblib
-        try:
-            from tensorflow.keras.models import load_model
-            model = load_model(modelo_path)
-        except Exception:
-            model = joblib.load(modelo_path)
-        encoder = joblib.load(encoder_path)
-        scaler = joblib.load(scaler_path)
+        model = load_model("modelo_entrega.h5")
+        encoder = joblib.load("encoder_entrega.pkl")
+        scaler = joblib.load("scaler_entrega.pkl")
         return model, encoder, scaler
 
     model, encoder, scaler = load_models()
@@ -29,12 +21,15 @@ def predict_view():
     destino = st.text_input("Destino")
     hora_salida = st.time_input("Hora de salida")
 
-    # ... Otros campos si tu modelo los necesita ...
-
+    # Ajusta aquí los features según tu modelo
     if st.button("Predecir"):
-        # Preprocesamiento (ajusta esto según tu pipeline real)
+        # Preprocesamiento (ajusta según lo que espere tu encoder)
         X = np.array([[origen, destino, str(hora_salida)]])
-        # X_encoded = encoder.transform(X)
-        # X_scaled = scaler.transform(X_encoded)
-        # pred = model.predict(X_scaled)
-        st.info("Aquí va la predicción real con tu modelo")
+        try:
+            # Codifica y escala (ajusta estos pasos según tu pipeline real)
+            X_encoded = encoder.transform(X)
+            X_scaled = scaler.transform(X_encoded)
+            pred = model.predict(X_scaled)
+            st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
+        except Exception as e:
+            st.error(f"Error en la predicción: {e}")

@@ -3,8 +3,6 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
-from auth import verify_password
-import hashlib
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -41,7 +39,8 @@ def login_block():
     password = st.text_input("Contraseña", type="password")
     if st.button("Ingresar"):
         user_row = users[users["username"] == username].iloc[0]
-        if verify_password(password, user_row["hashed_password"]):
+        # Compara contraseñas en texto plano
+        if password == user_row["hashed_password"]:
             st.session_state["logueado"] = True
             st.session_state["usuario"] = username
             st.success("¡Sesión iniciada correctamente!")
@@ -128,4 +127,3 @@ elif choice == "Agregar Pedido":
 elif choice == "Predicción":
     st.title("🔮 Predicción de entrega")
     predict_view()  # Llama tu vista/modelo predictivo importado de predict.py
-

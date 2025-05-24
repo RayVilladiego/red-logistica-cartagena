@@ -13,6 +13,8 @@ asyncpg
 psycopg2-binary
 joblib
 tensorflow
+scikit-learn
+category_encoders
 
 
 

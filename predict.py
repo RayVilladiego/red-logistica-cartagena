@@ -3,6 +3,12 @@ import numpy as np
 import joblib
 from tensorflow.keras.models import load_model
 
+# --- LISTA DE ZONAS ---
+zonas = [
+    "Mamonal", "Bocagrande", "Centro", "Getsemaní", "El Pozón", "San Felipe", "Crespo", "Pie de la Popa",
+    "Manga", "Los Alpes", "La Boquilla", "El Bosque", "El Laguito", "Otro"
+]
+
 def predict_view():
     st.title("🔮 Predicción del Tiempo de Entrega")
 
@@ -17,8 +23,8 @@ def predict_view():
     model, encoder, scaler = load_models()
 
     # Entradas del usuario
-    origen = st.text_input("Origen")
-    destino = st.text_input("Destino")
+    origen = st.selectbox("Origen", zonas)
+    destino = st.selectbox("Destino", zonas)
     hora_salida = st.time_input("Hora de salida")
 
     # Ajusta aquí los features según tu modelo

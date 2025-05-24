@@ -15,33 +15,37 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    # ACCESO A LAS CATEGORÍAS (¡aquí sí puedes usar encoder!)
-    if hasattr(encoder, 'transformers_'):
-        categorias_zona_destino = encoder.transformers_[0][1].categories_[0]
-        categorias_clima = encoder.transformers_[0][1].categories_[1]
-        categorias_tipo_via = encoder.transformers_[0][1].categories_[2]
-    else:
-        categorias_zona_destino = encoder.categories_[0]
-        categorias_clima = encoder.categories_[1]
-        categorias_tipo_via = encoder.categories_[2]
+    # ACCESO A LAS CATEGORÍAS REALES DEL ENCODER (ORDEN CORRECTO)
+    dias = encoder.categories_[0]
+    zonas = encoder.categories_[1]
+    climas = encoder.categories_[2]
+    tipos_via = encoder.categories_[3]
 
     # FORMULARIO
     hora = st.number_input("Hora de salida (0-23)", min_value=0, max_value=23, value=8)
-    dia_semana = st.selectbox(
-        "Día de la semana",
-        options=[0,1,2,3,4,5,6],
-        format_func=lambda x: ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"][x]
-    )
-    zona_destino = st.selectbox("Zona Destino", categorias_zona_destino)
-    clima = st.selectbox("Clima", categorias_clima)
-    tipo_via = st.selectbox("Tipo de vía", categorias_tipo_via)
+    dia = st.selectbox("Día", dias)
+    zona = st.selectbox("Zona", zonas)
+    clima = st.selectbox("Clima", climas)
+    tipo_via = st.selectbox("Tipo de vía", tipos_via)
     distancia_km = st.number_input("Distancia (km)", min_value=0.1, max_value=100.0, value=5.0, step=0.1)
 
     if st.button("Predecir"):
-        X_new = np.array([[hora, dia_semana, zona_destino, clima, tipo_via, distancia_km]])
+        # El input DEBE SER exactamente el orden de entrenamiento del modelo
+        X_new = np.array([[dia, zona, clima, tipo_via, hora, distancia_km]], dtype=object)
         try:
-            X_encoded = encoder.transform(X_new)
-            X_scaled = scaler.transform(X_encoded)
+            # OJO: Si el encoder fue ajustado a solo variables categóricas, separa lo numérico.
+            # Si usaste ColumnTransformer, puede que encoder espere solo categóricas.
+            # Supón que tu pipeline toma todo junto (lo más común en producción):
+            X_encoded = encoder.transform([[dia, zona, clima, tipo_via]])
+            # Agrega lo numérico al array que irá al scaler/model
+            # Si tu pipeline requiere [dia, zona, clima, tipo_via, hora, distancia], ajústalo según tu entrenamiento
+
+            # Si tu pipeline NO transforma numéricos y solo procesa categóricos,
+            # concatena las features para el scaler y modelo:
+            # (Aquí un ejemplo suponiendo que el encoder solo procesa las 4 categóricas)
+            X_total = np.hstack([X_encoded, [[hora, distancia_km]]])
+
+            X_scaled = scaler.transform(X_total)
             pred = model.predict(X_scaled)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:

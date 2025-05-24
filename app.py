@@ -57,21 +57,25 @@ if "logueado" not in st.session_state:
     st.session_state["logueado"] = False
 
 if not st.session_state["logueado"]:
-    show_about()   # Mensaje de bienvenida
     login_block()
 
-# --- MENÚ LATERAL ---
+# --- MENÚ LATERAL: Incluye Presentación primero ---
 st.sidebar.title("Menú")
-menu = ["Dashboard", "Órdenes", "Usuarios", "Agregar Pedido", "Predicción", "Cerrar sesión"]
+menu = [
+    "Presentación",
+    "Dashboard",
+    "Órdenes",
+    "Usuarios",
+    "Agregar Pedido",
+    "Predicción",
+    "Cerrar sesión"
+]
 choice = st.sidebar.radio("Ir a:", menu)
 
-# --- CERRAR SESIÓN ---
-if choice == "Cerrar sesión":
-    st.session_state["logueado"] = False
-    st.success("Sesión cerrada")
-    st.experimental_rerun()
+# --- RUTEO PRINCIPAL ---
+if choice == "Presentación":
+    show_about()
 
-# --- DASHBOARD ---
 elif choice == "Dashboard":
     st.title("📊 Dashboard de Logística")
     orders = get_orders()
@@ -90,43 +94,8 @@ elif choice == "Dashboard":
     st.subheader("Vista rápida de pedidos")
     st.dataframe(orders)
 
-# --- ÓRDENES ---
 elif choice == "Órdenes":
     st.title("📦 Órdenes Registradas")
     orders = get_orders()
     st.info(f"Total de pedidos en orders: {len(orders)}")
-    st.dataframe(orders)
-    
-# --- USUARIOS ---
-elif choice == "Usuarios":
-    st.title("👤 Usuarios Registrados")
-    users = get_users()
-    st.dataframe(users)
-    
-# --- AGREGAR PEDIDO ---
-elif choice == "Agregar Pedido":
-    st.title("➕ Agregar nuevo pedido")
-    users = get_users()
-    user_id = st.selectbox("Usuario", users["id"].tolist())
-    origen = st.selectbox("Origen", zonas)
-    destino = st.selectbox("Destino", zonas)
-    estado = st.selectbox("Estado", ["Pendiente", "En ruta", "Entregado"])
-    tiempo_estimado = st.number_input("Tiempo estimado (min)", min_value=1)
-    hora_salida = st.time_input("Hora de salida", value=datetime.now().time())
-
-    if st.button("Registrar Pedido"):
-        hora_salida_dt = datetime.combine(datetime.now().date(), hora_salida)
-        try:
-            insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida_dt)
-            st.success("Pedido agregado correctamente")
-            orders = get_orders()
-            st.subheader("Vista rápida de pedidos")
-            st.info(f"Total de pedidos en orders: {len(orders)}")
-            st.dataframe(orders)
-        except Exception as e:
-            st.error(f"Error al agregar pedido: {e}")
-
-# --- PREDICCIÓN (modelo ML/DL) ---
-elif choice == "Predicción":
-    st.title("🔮 Predicción de entrega")
-    predict_view()  # Tu función de modelo predictivo
+    s

@@ -15,9 +15,10 @@ def predict_view():
 
     model, encoder, scaler = load_models()
 
-    categorias_zona_destino = encoder.named_transformers_['cat'].categories_[0]
-    categorias_clima = encoder.named_transformers_['cat'].categories_[1]
-    categorias_tipo_via = encoder.named_transformers_['cat'].categories_[2]
+    # Acceso correcto a las categorías
+    categorias_zona_destino = encoder.transformers_[0][1].categories_[0]
+    categorias_clima = encoder.transformers_[0][1].categories_[1]
+    categorias_tipo_via = encoder.transformers_[0][1].categories_[2]
 
     hora = st.number_input("Hora de salida (0-23)", min_value=0, max_value=23, value=8)
     dia_semana = st.selectbox(

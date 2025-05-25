@@ -15,6 +15,21 @@ zonas = [
     "Manga", "Los Alpes", "La Boquilla", "El Bosque", "El Laguito", "Otro"
 ]
 
+# --- FONDO DINÁMICO SEGÚN ESTADO DE LOGIN ---
+def set_background(image_file):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url('{image_file}');
+            background-size: cover;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 # --- FUNCIONES AUXILIARES ---
 def get_users():
     return pd.read_sql("SELECT * FROM users", engine)
@@ -39,6 +54,9 @@ def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida)
 
 # --- LOGIN (FIJO: admin / 1234) ---
 def login_block():
+    # Fondo SOLO para login
+    set_background("fondo_login.png")
+
     st.title("🔒 Iniciar sesión")
     username = st.selectbox("Usuario", ["admin"])
     password = st.text_input("Contraseña", type="password")
@@ -47,7 +65,6 @@ def login_block():
             st.session_state["logueado"] = True
             st.session_state["usuario"] = username
             st.success("¡Sesión iniciada correctamente!")
-            # st.experimental_rerun()  # ELIMINADO
         else:
             st.error("Usuario o contraseña incorrectos")
     st.stop()
@@ -58,6 +75,9 @@ if "logueado" not in st.session_state:
 
 if not st.session_state["logueado"]:
     login_block()
+
+# Fondo general para la app DESPUÉS del login
+set_background("fondo_panel.png")
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
@@ -135,4 +155,3 @@ elif choice == "Predicción":
 elif choice == "Cerrar sesión":
     st.session_state["logueado"] = False
     st.success("Sesión cerrada")
-    # st.experimental_rerun()  # ELIMINADO

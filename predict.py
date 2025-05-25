@@ -20,6 +20,7 @@ def predict_view():
 
     hora = st.number_input("Hora de salida (0-23)", min_value=0, max_value=23, value=8)
     distancia_km = st.number_input("Distancia (km)", min_value=0.1, max_value=100.0, value=5.0, step=0.1)
+    velocidad_promedio = st.number_input("Velocidad Promedio (km/h)", min_value=1.0, max_value=200.0, value=30.0, step=0.1)
     dia = st.selectbox("Día de la semana", dias)
     zona = st.selectbox("Zona Destino", zonas)
     clima = st.selectbox("Clima", climas)
@@ -28,19 +29,16 @@ def predict_view():
     if st.button("Predecir"):
         try:
             # Preparar datos numéricos
-            X_num = np.array([[hora, distancia_km]])  # shape: (1, 2)
+            X_num = np.array([[hora, distancia_km, velocidad_promedio]])  # shape: (1, 3)
 
             # Codificar las variables categóricas
             X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # shape: (1, N)
 
             # Concatenar todo en un solo array
-            X_all = np.concatenate([X_num, X_cat], axis=1)  # shape: (1, 23)
-
-            # Escalar el array completo
-            X_scaled = scaler.transform(X_all)
+            X_all = np.concatenate([X_num, X_cat], axis=1)
 
             # Predicción
-            pred = model.predict(X_scaled)
+            pred = model.predict(X_all)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")

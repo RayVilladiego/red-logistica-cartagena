@@ -66,7 +66,7 @@ menu = [
     "Órdenes",
     "Usuarios",
     "Agregar Pedido",
-    "Panel Inteligente",
+    "Panel Inteligente",  # <--- NUEVO: Panel Inteligente va aquí
     "Predicción",
     "Cerrar sesión"
 ]

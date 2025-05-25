@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
+from dashboard_inteligente import show_dashboard  # <--- Importa el nuevo panel
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -65,6 +66,7 @@ menu = [
     "Órdenes",
     "Usuarios",
     "Agregar Pedido",
+    "Panel Inteligente",  # <--- NUEVO: Panel Inteligente va aquí
     "Predicción",
     "Cerrar sesión"
 ]
@@ -121,6 +123,10 @@ elif choice == "Agregar Pedido":
             st.dataframe(orders)
         except Exception as e:
             st.error(f"Error al agregar pedido: {e}")
+
+elif choice == "Panel Inteligente":
+    st.title("📈 Panel Inteligente de Logística")
+    show_dashboard()  # <--- Aquí se muestra tu dashboard avanzado
 
 elif choice == "Predicción":
     st.title("🔮 Predicción de entrega")

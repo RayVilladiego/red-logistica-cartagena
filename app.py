@@ -1,9 +1,29 @@
 import streamlit as st
+import os
+import base64
 from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
 from dashboard_inteligente import show_dashboard
+
+# --- FUNCIONES DE FONDO ---
+def set_background(image_file):
+    # Codifica la imagen como base64 para incrustarla en CSS
+    with open(image_file, "rb") as image:
+        encoded = base64.b64encode(image.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded}");
+            background-size: cover;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -14,21 +34,6 @@ zonas = [
     "Mamonal", "Bocagrande", "Centro", "Getsemaní", "El Pozón", "San Felipe", "Crespo", "Pie de la Popa",
     "Manga", "Los Alpes", "La Boquilla", "El Bosque", "El Laguito", "Otro"
 ]
-
-# --- FONDO DINÁMICO SEGÚN ESTADO DE LOGIN ---
-def set_background(image_file):
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url('{image_file}');
-            background-size: cover;
-            background-attachment: fixed;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
 
 # --- FUNCIONES AUXILIARES ---
 def get_users():
@@ -54,9 +59,7 @@ def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida)
 
 # --- LOGIN (FIJO: admin / 1234) ---
 def login_block():
-    # Fondo SOLO para login
-    set_background("fondo_login.png")
-
+    set_background("fondo_login.png")  # Fondo solo en login
     st.title("🔒 Iniciar sesión")
     username = st.selectbox("Usuario", ["admin"])
     password = st.text_input("Contraseña", type="password")
@@ -65,6 +68,7 @@ def login_block():
             st.session_state["logueado"] = True
             st.session_state["usuario"] = username
             st.success("¡Sesión iniciada correctamente!")
+            st.experimental_rerun()
         else:
             st.error("Usuario o contraseña incorrectos")
     st.stop()
@@ -75,9 +79,8 @@ if "logueado" not in st.session_state:
 
 if not st.session_state["logueado"]:
     login_block()
-
-# Fondo general para la app DESPUÉS del login
-set_background("fondo_panel.png")
+else:
+    set_background("fondo_panel.png")  # Fondo para toda la app luego del login
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
@@ -146,7 +149,7 @@ elif choice == "Agregar Pedido":
 
 elif choice == "Panel Inteligente":
     st.title("📈 Panel Inteligente de Logística")
-    show_dashboard()  # <--- Aquí se muestra tu dashboard avanzado
+    show_dashboard()
 
 elif choice == "Predicción":
     st.title("🔮 Predicción de entrega")

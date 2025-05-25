@@ -28,23 +28,23 @@ def predict_view():
 
     if st.button("Predecir"):
         try:
-            # 1. Prepara los datos numéricos (asegúrate que sea 2D)
-            X_num = np.array([[hora, distancia_km, velocidad_promedio]])  # (1,3)
+            # 1. Escala SOLO los numéricos
+            X_num = np.array([[hora, distancia_km, velocidad_promedio]])  # (1, 3)
+            X_num_scaled = scaler.transform(X_num)  # (1, 3)
 
-            # 2. Codifica los categóricos con el encoder (también es 2D)
-            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])     # (1,N)
+            # 2. Codifica los categóricos
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])     # (1, N)
 
-            # 3. Une ambos arrays (por columnas)
-            X_all = np.concatenate([X_num, X_cat], axis=1)  # (1, 3+N)
+            # 3. Concatena ambos
+            X_all = np.concatenate([X_num_scaled, X_cat], axis=1)         # (1, 3+N)
 
-            # --- Debug para saber shapes ---
-            # st.write(f"X_num shape: {X_num.shape}, X_cat shape: {X_cat.shape}, X_all shape: {X_all.shape}")
+            # --- Debug: muestra shapes (opcional, puedes comentar estas líneas) ---
+            # st.write("Numéricos escalados:", X_num_scaled.shape)
+            # st.write("Categóricos codificados:", X_cat.shape)
+            # st.write("Array final:", X_all.shape)
 
-            # 4. Si tienes scaler que fue ajustado al array completo, aplica scaler:
-            X_all_scaled = scaler.transform(X_all)
-
-            # 5. Predicción
-            pred = model.predict(X_all_scaled)
+            # 4. Predice
+            pred = model.predict(X_all)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")

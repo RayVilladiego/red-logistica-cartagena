@@ -7,8 +7,8 @@ def predict_view():
     @st.cache_resource
     def load_models():
         model = load_model("modelo_entrega.h5", compile=False)
-        encoder = joblib.load("encoder_entrega.pkl")
-        scaler = joblib.load("scaler_entrega.pkl")
+        encoder = joblib.load("encoder_entrega.pkl")  # Debe ser OneHotEncoder
+        scaler = joblib.load("scaler_entrega.pkl")    # Debe ser StandardScaler
         return model, encoder, scaler
 
     model, encoder, scaler = load_models()
@@ -28,15 +28,13 @@ def predict_view():
 
     if st.button("Predecir"):
         try:
-            # Preparar datos numéricos
-            X_num = np.array([[hora, distancia_km, velocidad_promedio]])  # shape: (1, 3)
-
-            # Codificar las variables categóricas
-            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # shape: (1, N)
-
-            # Concatenar todo en un solo array
-            X_all = np.concatenate([X_num, X_cat], axis=1)
-
+            # Escalar numéricos (siempre el mismo orden: Hora, Distancia, Velocidad Promedio)
+            X_num = np.array([[hora, distancia_km, velocidad_promedio]])
+            X_num_scaled = scaler.transform(X_num)
+            # Codificar categóricos (Día, Zona, Clima, Tipo_Via)
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
+            # Concatenar
+            X_all = np.concatenate([X_num_scaled, X_cat], axis=1)
             # Predicción
             pred = model.predict(X_all)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")

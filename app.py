@@ -15,38 +15,6 @@ zonas = [
     "Manga", "Los Alpes", "La Boquilla", "El Bosque", "El Laguito", "Otro"
 ]
 
-# --- FUNCIÓN PARA FONDO PERSONALIZADO Y ESTILO DE TEXTOS ---
-def set_background(image_file):
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url('{image_file}');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }}
-        /* Mejora contraste de textos, títulos y subheaders */
-        h1, h2, h3, h4, h5, h6, .stText, .stTitle, .stMarkdown, .stSubheader, .stAlert, .stDataFrame, .stMetricValue {{
-            color: #fff !important;
-            text-shadow: 1px 1px 2px #222, 0 0 10px #000a;
-        }}
-        .stButton > button, .stSelectbox, label, .stRadio, .stDateInput, .stTextInput > div > input, .stNumberInput > div > input {{
-            color: #fff !important;
-            background: rgba(32,48,99,0.6) !important;
-        }}
-        .stSidebar > div {{
-            background: rgba(20,24,35,0.85) !important;
-        }}
-        .stDataFrame thead tr th {{
-            background: rgba(22,28,43,0.7) !important;
-            color: #fff !important;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
 # --- FUNCIONES AUXILIARES ---
 def get_users():
     return pd.read_sql("SELECT * FROM users", engine)
@@ -79,21 +47,17 @@ def login_block():
             st.session_state["logueado"] = True
             st.session_state["usuario"] = username
             st.success("¡Sesión iniciada correctamente!")
-            st.experimental_rerun()  # <-- Solo aquí es válido para refrescar la sesión
+            # st.experimental_rerun()  # ELIMINADO
         else:
             st.error("Usuario o contraseña incorrectos")
     st.stop()
 
-# --- CONTROL DE SESIÓN Y FONDO ---
+# --- CONTROL DE SESIÓN ---
 if "logueado" not in st.session_state:
     st.session_state["logueado"] = False
 
 if not st.session_state["logueado"]:
-    set_background("fondo_login.png")
     login_block()
-    st.stop()
-else:
-    set_background("fondo_panel.png")
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
@@ -171,3 +135,4 @@ elif choice == "Predicción":
 elif choice == "Cerrar sesión":
     st.session_state["logueado"] = False
     st.success("Sesión cerrada")
+    # st.experimental_rerun()  # ELIMINADO

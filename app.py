@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import base64
 from sqlalchemy import create_engine, text
 import pandas as pd
@@ -7,16 +6,17 @@ from datetime import datetime
 from predict import predict_view
 from dashboard_inteligente import show_dashboard
 
-# --- FUNCIONES DE FONDO ---
+# --- FUNCIÓN DE FONDO CON OVERLAY OSCURO ---
 def set_background(image_file):
-    # Codifica la imagen como base64 para incrustarla en CSS
     with open(image_file, "rb") as image:
         encoded = base64.b64encode(image.read()).decode()
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background-image: url("data:image/png;base64,{encoded}");
+            background-image: 
+                linear-gradient(rgba(10, 18, 40, 0.68), rgba(10, 18, 40, 0.68)), 
+                url("data:image/png;base64,{encoded}");
             background-size: cover;
             background-attachment: fixed;
         }}

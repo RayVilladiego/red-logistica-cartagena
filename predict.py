@@ -26,21 +26,21 @@ def predict_view():
     tipo_via = st.selectbox("Tipo de vía", tipos_via)
 
     if st.button("Predecir"):
-    try:
-        # Primero, preparar datos numéricos
-        X_num = np.array([[hora, distancia_km]])  # shape: (1, 2)
+        try:
+            # Preparar datos numéricos
+            X_num = np.array([[hora, distancia_km]])  # shape: (1, 2)
 
-        # Codificar las variables categóricas
-        X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # shape: (1, N)
+            # Codificar las variables categóricas
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # shape: (1, N)
 
-        # Concatenar todo en un solo array
-        X_all = np.hstack([X_num, X_cat])  # shape: (1, 2+N)
+            # Concatenar todo en un solo array
+            X_all = np.concatenate([X_num, X_cat], axis=1)  # shape: (1, 23)
 
-        # Ahora sí, escalar el array completo
-        X_scaled = scaler.transform(X_all)  # scaler espera shape (1, 23)
+            # Escalar el array completo
+            X_scaled = scaler.transform(X_all)
 
-        # Predicción
-        pred = model.predict(X_scaled)
-        st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
-    except Exception as e:
-        st.error(f"Error en la predicción: {e}")
+            # Predicción
+            pred = model.predict(X_scaled)
+            st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
+        except Exception as e:
+            st.error(f"Error en la predicción: {e}")

@@ -8,7 +8,7 @@ def predict_view():
     def load_models():
         model = load_model("modelo_entrega.h5", compile=False)
         encoder = joblib.load("encoder_entrega.pkl")  # OneHotEncoder
-        scaler = joblib.load("scaler_entrega.pkl")    # StandardScaler (ajustado a los 23 features)
+        scaler = joblib.load("scaler_entrega.pkl")    # StandardScaler
         return model, encoder, scaler
 
     model, encoder, scaler = load_models()
@@ -27,18 +27,24 @@ def predict_view():
     tipo_via = st.selectbox("Tipo de vía", tipos_via)
 
     if st.button("Predecir"):
-    try:
-        # 1. Prepara los datos numéricos
-        X_num = np.array([[hora, distancia_km, velocidad_promedio]])  # (1,3)
+        try:
+            # 1. Prepara los datos numéricos (asegúrate que sea 2D)
+            X_num = np.array([[hora, distancia_km, velocidad_promedio]])  # (1,3)
 
-        # 2. Codifica los categóricos con el encoder recién verificado
-        X_cat = encoder.transform([[dia, zona, clima, tipo_via]])     # (1,N)
+            # 2. Codifica los categóricos con el encoder (también es 2D)
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])     # (1,N)
 
-        # 3. Une ambos para tener el input completo
-        X_all = np.concatenate([X_num, X_cat], axis=1)               # (1, 3+N)
+            # 3. Une ambos arrays (por columnas)
+            X_all = np.concatenate([X_num, X_cat], axis=1)  # (1, 3+N)
 
-        # 4. Predice (si tu modelo espera X_all directo)
-        pred = model.predict(X_all)
-        st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
-    except Exception as e:
-        st.error(f"Error en la predicción: {e}")
+            # --- Debug para saber shapes ---
+            # st.write(f"X_num shape: {X_num.shape}, X_cat shape: {X_cat.shape}, X_all shape: {X_all.shape}")
+
+            # 4. Si tienes scaler que fue ajustado al array completo, aplica scaler:
+            X_all_scaled = scaler.transform(X_all)
+
+            # 5. Predicción
+            pred = model.predict(X_all_scaled)
+            st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
+        except Exception as e:
+            st.error(f"Error en la predicción: {e}")

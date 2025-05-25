@@ -4,12 +4,16 @@ import joblib
 from tensorflow.keras.models import load_model
 
 def predict_view():
+    st.title("🔮 Predicción de entrega")
+
     @st.cache_resource
     def load_models():
-        model = load_model("modelo_entrega.h5")
-        return model
+        model = load_model("modelo_entrega.h5")         # <- Debe estar en la misma carpeta que este archivo
+        encoder = joblib.load("encoder_entrega.pkl")    # <- Igual, mismo lugar
+        scaler = joblib.load("scaler_entrega.pkl")
+        return model, encoder, scaler
 
-    model = load_models()
+    model, encoder, scaler = load_models()
 
     dias = ['Domingo', 'Jueves', 'Lunes', 'Martes', 'Miércoles', 'Sábado', 'Viernes']
     zonas = ['Bocagrande', 'Centro', 'Getsemaní', 'La Boquilla', 'Mamonal']
@@ -27,9 +31,12 @@ def predict_view():
 
     if st.button("Predecir"):
         try:
-            # Orden correcto
-            input_data = [[hora, distancia_km, velocidad_prom, dia, zona, clima, tipo_via]]
-            pred = model.predict(input_data)
+            # Asegúrate que el orden de las columnas es el mismo del entrenamiento
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # Codificación OneHot/Label
+            X_num = np.array([[hora, distancia_km, velocidad_prom]])   # Variables numéricas
+            X_num_scaled = scaler.transform(X_num)                     # Escalar igual que en el entrenamiento
+            X_processed = np.hstack([X_num_scaled, X_cat])             # Concatenar para la red
+            pred = model.predict(X_processed)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")

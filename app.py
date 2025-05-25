@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
+from dashboard_inteligente import show_dashboard
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"

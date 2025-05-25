@@ -4,13 +4,6 @@ import pandas as pd
 from datetime import datetime
 from predict import predict_view
 
-# --- PRUEBA RÁPIDA DEL IMPORT ---
-try:
-    from dashboard_inteligente import show_dashboard  # <--- Importa el nuevo panel
-    st.sidebar.success("✅ Import panel inteligente OK")  # Mensaje en la barra lateral
-except Exception as e:
-    st.sidebar.error(f"❌ Error importando Panel Inteligente: {e}")
-
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
 engine = create_engine(DATABASE_URL)

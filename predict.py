@@ -27,18 +27,18 @@ def predict_view():
     tipo_via = st.selectbox("Tipo de vía", tipos_via)
 
     if st.button("Predecir"):
-        try:
-            # Primero codifica categóricos → one-hot
-            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # shape (1, N)
+    try:
+        # 1. Prepara los datos numéricos
+        X_num = np.array([[hora, distancia_km, velocidad_promedio]])  # (1,3)
 
-            # Luego concatena los numéricos al final (igual que en tu entrenamiento)
-            X_all = np.concatenate([X_cat, np.array([[hora, distancia_km, velocidad_promedio]])], axis=1)  # shape (1, 20+3=23)
+        # 2. Codifica los categóricos con el encoder recién verificado
+        X_cat = encoder.transform([[dia, zona, clima, tipo_via]])     # (1,N)
 
-            # Ahora sí, escalar TODO el array
-            X_scaled = scaler.transform(X_all)  # scaler espera shape (1, 23)
+        # 3. Une ambos para tener el input completo
+        X_all = np.concatenate([X_num, X_cat], axis=1)               # (1, 3+N)
 
-            # Predicción
-            pred = model.predict(X_scaled)
-            st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
-        except Exception as e:
-            st.error(f"Error en la predicción: {e}")
+        # 4. Predice (si tu modelo espera X_all directo)
+        pred = model.predict(X_all)
+        st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
+    except Exception as e:
+        st.error(f"Error en la predicción: {e}")

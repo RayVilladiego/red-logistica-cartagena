@@ -1,29 +1,9 @@
 import streamlit as st
-import base64
 from sqlalchemy import create_engine, text
 import pandas as pd
 from datetime import datetime
 from predict import predict_view
 from dashboard_inteligente import show_dashboard
-
-# --- FUNCIÓN DE FONDO CON OVERLAY OSCURO ---
-def set_background(image_file):
-    with open(image_file, "rb") as image:
-        encoded = base64.b64encode(image.read()).decode()
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: 
-                linear-gradient(rgba(10, 18, 40, 0.68), rgba(10, 18, 40, 0.68)), 
-                url("data:image/png;base64,{encoded}");
-            background-size: cover;
-            background-attachment: fixed;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
 
 # --- CONFIGURACIÓN DE CONEXIÓN ---
 DATABASE_URL = "postgresql://postgres.aiiqkmslpfcleptmejfk:Brunokaliq12345@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
@@ -34,6 +14,38 @@ zonas = [
     "Mamonal", "Bocagrande", "Centro", "Getsemaní", "El Pozón", "San Felipe", "Crespo", "Pie de la Popa",
     "Manga", "Los Alpes", "La Boquilla", "El Bosque", "El Laguito", "Otro"
 ]
+
+# --- FUNCIÓN PARA FONDO PERSONALIZADO Y ESTILO DE TEXTOS ---
+def set_background(image_file):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url('{image_file}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        /* Mejora contraste de textos, títulos y subheaders */
+        h1, h2, h3, h4, h5, h6, .stText, .stTitle, .stMarkdown, .stSubheader, .stAlert, .stDataFrame, .stMetricValue {{
+            color: #fff !important;
+            text-shadow: 1px 1px 2px #222, 0 0 10px #000a;
+        }}
+        .stButton > button, .stSelectbox, label, .stRadio, .stDateInput, .stTextInput > div > input, .stNumberInput > div > input {{
+            color: #fff !important;
+            background: rgba(32,48,99,0.6) !important;
+        }}
+        .stSidebar > div {{
+            background: rgba(20,24,35,0.85) !important;
+        }}
+        .stDataFrame thead tr th {{
+            background: rgba(22,28,43,0.7) !important;
+            color: #fff !important;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 # --- FUNCIONES AUXILIARES ---
 def get_users():
@@ -59,7 +71,6 @@ def insert_order(user_id, origen, destino, estado, tiempo_estimado, hora_salida)
 
 # --- LOGIN (FIJO: admin / 1234) ---
 def login_block():
-    set_background("fondo_login.png")  # Fondo solo en login
     st.title("🔒 Iniciar sesión")
     username = st.selectbox("Usuario", ["admin"])
     password = st.text_input("Contraseña", type="password")
@@ -68,19 +79,21 @@ def login_block():
             st.session_state["logueado"] = True
             st.session_state["usuario"] = username
             st.success("¡Sesión iniciada correctamente!")
-            st.experimental_rerun()
+            st.experimental_rerun()  # <-- Solo aquí es válido para refrescar la sesión
         else:
             st.error("Usuario o contraseña incorrectos")
     st.stop()
 
-# --- CONTROL DE SESIÓN ---
+# --- CONTROL DE SESIÓN Y FONDO ---
 if "logueado" not in st.session_state:
     st.session_state["logueado"] = False
 
 if not st.session_state["logueado"]:
+    set_background("fondo_login.png")
     login_block()
+    st.stop()
 else:
-    set_background("fondo_panel.png")  # Fondo para toda la app luego del login
+    set_background("fondo_panel.png")
 
 # --- MENÚ LATERAL ---
 st.sidebar.title("Menú")
@@ -89,7 +102,7 @@ menu = [
     "Órdenes",
     "Usuarios",
     "Agregar Pedido",
-    "Panel Inteligente",  # <--- NUEVO: Panel Inteligente va aquí
+    "Panel Inteligente",
     "Predicción",
     "Cerrar sesión"
 ]
@@ -149,7 +162,7 @@ elif choice == "Agregar Pedido":
 
 elif choice == "Panel Inteligente":
     st.title("📈 Panel Inteligente de Logística")
-    show_dashboard()
+    show_dashboard()  # <--- Aquí se muestra tu dashboard avanzado
 
 elif choice == "Predicción":
     st.title("🔮 Predicción de entrega")

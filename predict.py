@@ -8,7 +8,7 @@ def predict_view():
 
     @st.cache_resource
     def load_models():
-        model = load_model("modelo_entrega.h5")
+        model = load_model("modelo_entrega.h5", compile=False)
         encoder = joblib.load("encoder_entrega.pkl")
         scaler = joblib.load("scaler_entrega.pkl")
         return model, encoder, scaler

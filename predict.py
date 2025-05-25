@@ -4,7 +4,6 @@ import joblib
 from tensorflow.keras.models import load_model
 
 def predict_view():
-    st.title("🔮 Predicción de entrega")
 
     @st.cache_resource
     def load_models():

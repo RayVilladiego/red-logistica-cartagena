@@ -7,8 +7,8 @@ def predict_view():
     @st.cache_resource
     def load_models():
         model = load_model("modelo_entrega.h5", compile=False)
-        encoder = joblib.load("encoder_entrega.pkl")  # Debe ser OneHotEncoder
-        scaler = joblib.load("scaler_entrega.pkl")    # Debe ser StandardScaler
+        encoder = joblib.load("encoder_entrega.pkl")  # OneHotEncoder
+        scaler = joblib.load("scaler_entrega.pkl")    # StandardScaler (ajustado a los 23 features)
         return model, encoder, scaler
 
     model, encoder, scaler = load_models()
@@ -28,15 +28,17 @@ def predict_view():
 
     if st.button("Predecir"):
         try:
-            # Escalar numéricos (siempre el mismo orden: Hora, Distancia, Velocidad Promedio)
-            X_num = np.array([[hora, distancia_km, velocidad_promedio]])
-            X_num_scaled = scaler.transform(X_num)
-            # Codificar categóricos (Día, Zona, Clima, Tipo_Via)
-            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])
-            # Concatenar
-            X_all = np.concatenate([X_num_scaled, X_cat], axis=1)
+            # Primero codifica categóricos → one-hot
+            X_cat = encoder.transform([[dia, zona, clima, tipo_via]])  # shape (1, N)
+
+            # Luego concatena los numéricos al final (igual que en tu entrenamiento)
+            X_all = np.concatenate([X_cat, np.array([[hora, distancia_km, velocidad_promedio]])], axis=1)  # shape (1, 20+3=23)
+
+            # Ahora sí, escalar TODO el array
+            X_scaled = scaler.transform(X_all)  # scaler espera shape (1, 23)
+
             # Predicción
-            pred = model.predict(X_all)
+            pred = model.predict(X_scaled)
             st.success(f"Tiempo estimado de entrega: {pred[0][0]:.2f} minutos")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")
